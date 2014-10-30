@@ -12,7 +12,7 @@
 
 class BitonicSort {
 public:
-	BitonicSort(HSAContext * context, const std::string& bsort_init, )
+	BitonicSort(HSAContext * context, const std::string& bsort_init){}
 
 };
 
