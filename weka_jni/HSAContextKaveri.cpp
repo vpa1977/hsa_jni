@@ -255,6 +255,12 @@ private:
       uint32_t workgroup_size[3];
       uint32_t global_size[3];
       static const int ARGS_VEC_INITIAL_CAPACITY = 256 * 8;   
+      // bind kernel arguments
+      //printf("arg_vec size: %d in bytes: %d\n", arg_vec.size(), arg_vec.size());
+      hsa_region_t region;
+
+      uint64_t kernargs_address;
+      uint32_t kernargs_length;
 
       hsa_signal_t signal;
       hsa_dispatch_packet_t aql;
@@ -267,8 +273,13 @@ private:
          // allocate the initial argument vector capacity
          arg_vec.reserve(ARGS_VEC_INITIAL_CAPACITY);
          registerArgVecMemory();
-
          clearArgs();
+         //printf("hsa_agent_iterate_regions\n");
+         hsa_agent_iterate_regions(context->device, get_kernarg, &region);
+         //printf("kernarg region: %08X\n", region);
+         kernargs_address  = 0;
+         kernargs_length = 0;
+
       }
 
       virtual ~DispatchImpl()
@@ -350,8 +361,10 @@ private:
          if (isDispatched) {
            return HSA_STATUS_ERROR_INVALID_ARGUMENT;
          }
-         dispatchKernelAndGetFuture().wait();
-         return status;
+         status =  dispatchKernel();
+         if (status != HSA_STATUS_SUCCESS)
+        	 return status;
+         return waitComplete();
       } 
 
 
@@ -408,18 +421,30 @@ private:
          // bind kernel code
          aql.kernel_object_address = kernel->hsaCodeDescriptor->code.handle; 
 
-         // bind kernel arguments
-         //printf("arg_vec size: %d in bytes: %d\n", arg_vec.size(), arg_vec.size());
-         hsa_region_t region;
-         //printf("hsa_agent_iterate_regions\n");
-         hsa_agent_iterate_regions(context->device, get_kernarg, &region);
-         //printf("kernarg region: %08X\n", region);
+         size_t cur_len = roundUp(arg_vec.size());
+	     if (kernargs_length > 0 && kernargs_length != cur_len)
+ 		 {
+			 hsa_memory_deregister((void*)kernargs_address, kernargs_length);
+			 free((void*)kernargs_address);
+			 kernargs_address = 0;
+		 }
 
-         //printf("hsa_memory_allocate in region: %08X size: %d bytes\n", region, roundUp(arg_vec.size()));
-         if ((status = hsa_memory_allocate(region, roundUp(arg_vec.size()), (void**) &aql.kernarg_address)) != HSA_STATUS_SUCCESS) {
-           printf("hsa_memory_allocate error: %d\n", status);
-           exit(1);
+         if (!kernargs_address)
+         {
+             //printf("hsa_memory_allocate in region: %08X size: %d bytes\n", region, roundUp(arg_vec.size()));
+             if ((status = hsa_memory_allocate(region, roundUp(arg_vec.size()), (void**) &aql.kernarg_address)) != HSA_STATUS_SUCCESS) {
+               printf("hsa_memory_allocate error: %d\n", status);
+               exit(1);
+             }
+             kernargs_address = aql.kernarg_address;
+             kernargs_length = cur_len;
          }
+         else
+         {
+        	 aql.kernarg_address = kernargs_address;
+         }
+
+
 
          //printf("memcpy dst: %08X, src: %08X, %d kernargs, %d bytes\n", aql.kernarg_address, arg_vec.data(), arg_count, arg_vec.size());
          memcpy((void*)aql.kernarg_address, arg_vec.data(), arg_vec.size());
@@ -466,8 +491,8 @@ private:
 
          //printf("complete!\n");
 
-         hsa_memory_deregister((void*)aql.kernarg_address, roundUp(arg_vec.size()));
-         free((void*)aql.kernarg_address);
+         //hsa_memory_deregister((void*)aql.kernarg_address, roundUp(arg_vec.size()));
+         //free((void*)aql.kernarg_address);
 
          hsa_signal_store_relaxed(signal, 1);
          isDispatched = false;
@@ -478,6 +503,13 @@ private:
          hsa_status_t status;
          status = hsa_memory_deregister(arg_vec.data(), arg_vec.capacity() * sizeof(uint8_t));
          assert(status == HSA_STATUS_SUCCESS);
+         if (kernargs_length)
+		 {
+			 hsa_memory_deregister((void*)kernargs_address, kernargs_length);
+			 free((void*)kernargs_address);
+			 kernargs_address = 0;
+		 }
+
       }
 
    private:
@@ -491,6 +523,10 @@ private:
            //printf("%02X ", (uint8_t)0x00);
          }
          uint8_t*ptr = static_cast<uint8_t*>(static_cast<void*>(&val));
+         //int offset = arg_vec.size();
+         //arg_vec.resize(arg_vec.size() + sizeof(T));
+         //memcpy(&arg_vec[offset], ptr, sizeof(T));
+
          for (size_t i = 0; i < sizeof(T); ++i) {
            arg_vec.push_back(ptr[i]);
            //printf("%02X ", ptr[i]);

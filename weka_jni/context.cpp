@@ -25,16 +25,23 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_init
 
 
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_rescanRanges
-  (JNIEnv *env, jobject, jdoubleArray window, jdoubleArray ranges, jint numerics, jint instance_size, jint window_size, jint attr)
+  (JNIEnv *env, jobject, jdoubleArray window, jdoubleArray ranges, jint numerics, jint instance_size, jint window_size, jint attr, jint is_max)
 {
 	jboolean is_copy;
 	double* window_ptr =(double*) env->GetPrimitiveArrayCritical(window, &is_copy);
 	double* ranges_ptr =(double*) env->GetPrimitiveArrayCritical(ranges, &is_copy);
 	int off = attr*2;
-	double min = g_algorithms.m_min_value.find(window_ptr,window_size, instance_size, attr);
-	double max = g_algorithms.m_max_value.find(window_ptr,window_size, instance_size, attr);
-	ranges_ptr[off] = min;
-	ranges_ptr[off+1] = max;
+	if (is_max)
+	{
+		double max = g_algorithms.m_max_value.find(window_ptr,window_size, instance_size, attr);
+		ranges_ptr[off+1] = max;
+	}
+	else
+	{
+		double min = g_algorithms.m_min_value.find(window_ptr,window_size, instance_size, attr);
+		ranges_ptr[off] = min;
+	}
+
 
 	env->ReleasePrimitiveArrayCritical(window, window_ptr, 0);
 	env->ReleasePrimitiveArrayCritical(ranges, ranges_ptr, 0);
