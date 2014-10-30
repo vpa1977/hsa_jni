@@ -40,11 +40,24 @@ public class App
     	Instance inst;
     	int count = 0;
     	Instance test = loader.getNextInstance(instances);
+
+    	{
+	    	long start = System.currentTimeMillis();
+	    	for (int i = 0 ;i < 1000 ; ++i)
+	    		knn.addInstance(test);
+			long end = System.currentTimeMillis();
+	    	System.out.println("Time "+ (end -start));
+    	}
+    	 
+    	
+    	
 		while ( (inst = loader.getNextInstance(instances)) != null)
 		{
-			System.out.println("Adding "+(++count));
 			knn.addInstance(inst);
 		}
+		
+		
+		
 		for (int i = 0 ;i < 1000 ;  ++i)
 			knn.computeKnn(test);
 		

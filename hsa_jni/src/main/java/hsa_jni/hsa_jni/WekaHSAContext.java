@@ -106,8 +106,10 @@ public class WekaHSAContext {
 			{
 				int idx = m_numerics[i];
 				double val  = m_window[offset];
-				if (m_ranges[i*2] == val || m_ranges[i*2+1] == val )
-					rescanRanges(m_window, m_ranges,m_numerics.length, m_numerics.length + m_nominals.length, m_current_size, i);
+				if (m_ranges[i*2] == val)
+					rescanRanges(m_window, m_ranges,m_numerics.length, m_numerics.length + m_nominals.length, m_current_size, i,0);
+				else if (m_ranges[i*2+1] == val) 
+					rescanRanges(m_window, m_ranges,m_numerics.length, m_numerics.length + m_nominals.length, m_current_size, i,1);
 				m_window[offset] = inst.value(idx);
 				if (m_ranges[i*2] > m_window[offset])
 					m_ranges[i*2] = m_window[offset];
@@ -129,7 +131,7 @@ public class WekaHSAContext {
 		}
 		
 		private native void knn(double[] instance, double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, double[] result_distance, int[] result_index);
-		private native void rescanRanges(double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, int attribute );
+		private native void rescanRanges(double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, int attribute, int is_max );
 		
 		public Instances m_model;
 		public Instance[] m_instances;

@@ -18,10 +18,10 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeConte
 /*
  * Class:     hsa_jni_hsa_jni_WekaHSAContext_KnnNativeContext
  * Method:    rescanRanges
- * Signature: ([D[DIIII)V
+ * Signature: ([D[DIIIII)V
  */
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_rescanRanges
-  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jint, jint, jint, jint);
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jint, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

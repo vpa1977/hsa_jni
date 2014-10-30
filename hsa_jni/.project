@@ -20,4 +20,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>kernels</name>
+			<type>2</type>
+			<location>/home/bsp/hsa_jni/kernels</location>
+		</link>
+	</linkedResources>
 </projectDescription>
