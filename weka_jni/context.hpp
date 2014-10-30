@@ -8,7 +8,7 @@
 #ifndef CONTEXT_HPP_
 #define CONTEXT_HPP_
 
-
+#include <memory>
 #include <jni.h>
 #include "hsa_jni_hsa_jni_WekaHSAContext.h"
 #include "hsa_jni_hsa_jni_WekaHSAContext_KnnNativeContext.h"
@@ -25,7 +25,7 @@
 
 struct Algorithms
 {
-	Algorithms(HSAContext* p_context) : m_pcontext(p_context),
+	Algorithms(std::shared_ptr<HSAContext> p_context) : m_pcontext(p_context),
 				   m_max_value(m_pcontext, "/home/bsp/hsa_jni/kernels/max_value.brig"),
 				   m_min_value(m_pcontext, "/home/bsp/hsa_jni/kernels/min_value.brig"),
 				   m_merge_sort(m_pcontext,
@@ -36,15 +36,8 @@ struct Algorithms
 }
 	~Algorithms()
 	{
-		// ugly/refactor asap
-		m_max_value.~MaxValue();
-		m_min_value.~MinValue();
-		m_merge_sort.~MergeSort();
-		m_square_distance.~SquareDistance();
-
-		delete m_pcontext;
 	}
-	HSAContext* m_pcontext;
+	std::shared_ptr<HSAContext> m_pcontext;
 	MaxValue m_max_value;
 	MinValue m_min_value;
 	MergeSort m_merge_sort;

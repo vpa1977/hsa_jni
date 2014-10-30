@@ -17,14 +17,14 @@
 class MergeSort
 {
 public:
-	MergeSort(HSAContext* context, const std::string& local_merge_brig, const std::string& global_merge_brig)
+	MergeSort(std::shared_ptr<HSAContext> context, const std::string& local_merge_brig, const std::string& global_merge_brig)
 	{
 		m_local_kernel = context->createKernel(local_merge_brig.c_str(), "&__OpenCL_run_kernel");
 		m_local_dispatch = context->createDispatch(m_local_kernel);
 
 		m_global_kernel = context->createKernel(global_merge_brig.c_str(), "&__OpenCL_run_kernel");
 		m_global_dispatch = context->createDispatch(m_global_kernel);
-
+		m_context = context;
 	}
 	virtual ~MergeSort()
 	{
@@ -223,6 +223,7 @@ private:
 
 	}
 private:
+	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Kernel* m_local_kernel;
 	HSAContext::Kernel* m_global_kernel;
 	HSAContext::Dispatch* m_local_dispatch;

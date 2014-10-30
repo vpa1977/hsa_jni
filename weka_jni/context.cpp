@@ -12,15 +12,19 @@
 /**
  * context wrapper for the hsa algorithms
  */
-Algorithms g_algorithms(HSAContext::Create());
+
+
+std::shared_ptr<HSAContext> p_context(HSAContext::Create());
+
+Algorithms g_algorithms(p_context);
+
 
 
 
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_init
   (JNIEnv *, jobject)
 {
-	// nothing for now.
-	// bind object to context in the future
+
 }
 
 

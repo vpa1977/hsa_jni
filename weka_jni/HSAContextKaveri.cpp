@@ -484,10 +484,10 @@ private:
          //printf("wait for completion...");
 
          // wait for completion
-         if (hsa_signal_wait_acquire(signal, HSA_LT, 1, uint64_t(-1), HSA_WAIT_EXPECTANCY_UNKNOWN)!=0) {
+         if (hsa_signal_wait_acquire(signal, HSA_LT, 1, uint64_t(-1), HSA_WAIT_EXPECTANCY_SHORT)!=0) {
            printf("Signal wait returned unexpected value\n");
-           exit(0);
-         }
+          exit(0);
+        }
 
          //printf("complete!\n");
 

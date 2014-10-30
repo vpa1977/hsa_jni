@@ -19,10 +19,11 @@
 class MaxValue
 {
 public:
-	MaxValue(HSAContext* context, const std::string& brig_module)
+	MaxValue(std::shared_ptr<HSAContext> context, const std::string& brig_module)
 	{
 		m_kernel = context->createKernel(brig_module.c_str(), "&__OpenCL_run_kernel");
 		m_dispatch = context->createDispatch(m_kernel);
+		m_context = context;
 	}
 	virtual ~MaxValue()
 	{
@@ -45,7 +46,7 @@ public:
 		size_t global_size = num_wg * num_compute_units;
 		size_t workgroup_size = 256;
 
-		m_result.resize( global_size );
+		m_result.resize( global_size);
 
 		m_dispatch->clearArgs();
 		m_dispatch->pushPointerArg(0);
@@ -60,7 +61,7 @@ public:
 		m_dispatch->pushIntArg(stride);
 		m_dispatch->pushIntArg(offset);
 		m_dispatch->pushPointerArg((void*)&m_result[0]);
-		size_t global_dims[3] = {global_size*workgroup_size,1,1};
+		size_t global_dims[3] = {workgroup_size*workgroup_size,1,1};
 		size_t local_dims[3] = {workgroup_size,1,1};
 		m_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
 		m_dispatch->dispatchKernelWaitComplete();
@@ -94,15 +95,17 @@ protected:
 protected:
 	std::vector<int> m_result;
 private:
+	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Kernel* m_kernel;
 	HSAContext::Dispatch* m_dispatch;
+
 
 };
 
 class MinValue : public MaxValue
 {
 public:
-	MinValue(HSAContext* context, const std::string& brig_module) : MaxValue(context, brig_module){}
+	MinValue(std::shared_ptr<HSAContext> context, const std::string& brig_module) : MaxValue(context, brig_module){}
 private:
 	virtual double post_reduce(double* in, size_t size)
 	{

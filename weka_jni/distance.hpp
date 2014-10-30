@@ -15,7 +15,7 @@
 class SquareDistance
 {
 public:
-		SquareDistance(HSAContext* context, const std::string& brig_module)
+		SquareDistance(std::shared_ptr<HSAContext> context, const std::string& brig_module)
 		{
 			m_kernel = context->createKernel(brig_module.c_str(), "&__OpenCL_square_distance_kernel");
 			m_dispatch = context->createDispatch(m_kernel);
@@ -46,7 +46,7 @@ public:
 			m_dispatch->dispatchKernelWaitComplete();
 		}
 private:
-		HSAContext* m_context;
+		std::shared_ptr<HSAContext> m_context;
 		HSAContext::Dispatch* m_dispatch;
 		HSAContext::Kernel* m_kernel;
 };
