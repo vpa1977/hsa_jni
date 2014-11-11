@@ -29,23 +29,20 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_init
 
 
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_rescanRanges
-  (JNIEnv *env, jobject, jdoubleArray window, jdoubleArray ranges, jint numerics, jint instance_size, jint window_size, jint attr, jint is_max)
+  (JNIEnv *env, jobject obj, jdoubleArray window, jdoubleArray ranges, jint numeric_size, jint instance_size, jint window_size, jint current_size)
 {
 	jboolean is_copy;
 	double* window_ptr =(double*) env->GetPrimitiveArrayCritical(window, &is_copy);
 	double* ranges_ptr =(double*) env->GetPrimitiveArrayCritical(ranges, &is_copy);
-	int off = attr*2;
-	if (is_max)
-	{
-		double max = g_algorithms.m_max_value.find(window_ptr,window_size, instance_size, attr);
-		ranges_ptr[off+1] = max;
-	}
-	else
-	{
-		double min = g_algorithms.m_min_value.find(window_ptr,window_size, instance_size, attr);
-		ranges_ptr[off] = min;
-	}
 
+	// test code please ignore
+	int num_instances = window_size / instance_size;
+	for (int i = 0 ; i < numeric_size; ++i)
+	{
+		int offset = i * num_instances;
+		int off = i*2;
+		g_algorithms.m_min_max_value.find(window_ptr+offset,current_size,ranges_ptr[off], ranges_ptr[off+1] );
+	}
 
 	env->ReleasePrimitiveArrayCritical(window, window_ptr, 0);
 	env->ReleasePrimitiveArrayCritical(ranges, ranges_ptr, 0);
@@ -53,9 +50,8 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeConte
 
 
 //		private native void knn(double[] instance, double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, double[] result_distance, int[] result_index);
-
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_knn
-  (JNIEnv *env, jobject obj, jdoubleArray instance, jdoubleArray window, jdoubleArray ranges, jint numerics_size, jint instance_size, jint window_size, jdoubleArray distances, jintArray indexes)
+  (JNIEnv * env, jobject obj, jdoubleArray instance, jdoubleArray window, jdoubleArray ranges, jint numerics_size, jint instance_size, jint window_size, jint current_size, jdoubleArray distances, jintArray indexes)
 {
 	jboolean is_copy;
 	double* window_ptr =(double*) env->GetPrimitiveArrayCritical(window, &is_copy);
@@ -64,8 +60,7 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeConte
 	double* distances_ptr = (double*) env->GetPrimitiveArrayCritical(distances, &is_copy);
 	int* indexes_ptr = (int*) env->GetPrimitiveArrayCritical(indexes, &is_copy);
 	{
-		g_algorithms.m_square_distance.calculate(instance_ptr,window_ptr, window_size, ranges_ptr,instance_size, numerics_size, distances_ptr );
-
+		g_algorithms.m_per_attribute_distances.distance(instance_ptr,window_ptr, ranges_ptr,numerics_size, instance_size, window_size,current_size, distances_ptr );
 		g_algorithms.m_merge_sort.sort(distances_ptr, indexes_ptr, window_size);
 	}
 

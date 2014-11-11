@@ -235,6 +235,7 @@ private:
                 hsa_status_t status;
                 if (hsaProgram.handle != 0) {
           	      status = hsa_ext_program_destroy(hsaProgram);
+          	      hsaProgram.handle = 0;
                   STATUS_CHECK(status, __LINE__);
                 }
             }

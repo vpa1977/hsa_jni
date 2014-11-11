@@ -164,8 +164,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.so.release.319290454.2067077302" name="test_startup.cpp" rcbsApplicability="disable" resourcePath="test_startup.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588.1510152828">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588.1510152828" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="test_files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="test_startup.cpp|test_files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -204,7 +207,7 @@
 									<listOptionValue builtIn="false" value="/home/bsp/Bolt-Release/include"/>
 									<listOptionValue builtIn="false" value="/home/bsp/appsdk2.9/AMDAPPSDK-2.9-1/include"/>
 									<listOptionValue builtIn="false" value="/home/bsp/Okra-Interface-to-HSA-Device/okra/dist/include"/>
-									<listOptionValue builtIn="false" value="/home/bsp/hsa_jni/hsa_jni"/>
+									<listOptionValue builtIn="false" value="/home/bsp/git_repository/hsa_jni"/>
 									<listOptionValue builtIn="false" value="/home/bsp/jdk8/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.dialect.std.1085280920" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>

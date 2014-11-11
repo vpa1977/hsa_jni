@@ -22,26 +22,35 @@
 #include "max_value.hpp"
 #include "merge_sort.hpp"
 #include "distance.hpp"
+#include "dump.hpp"
+
 
 struct Algorithms
 {
 	Algorithms(std::shared_ptr<HSAContext> p_context) : m_pcontext(p_context),
+				   m_min_max_value(m_pcontext, "/home/bsp/hsa_jni/kernels/min_max_value.brig"),
 				   m_max_value(m_pcontext, "/home/bsp/hsa_jni/kernels/max_value.brig"),
 				   m_min_value(m_pcontext, "/home/bsp/hsa_jni/kernels/min_value.brig"),
 				   m_merge_sort(m_pcontext,
 						   "/home/bsp/hsa_jni/kernels/local_merge.brig",
 						   "/home/bsp/hsa_jni/kernels/global_merge.brig"),
-			       m_square_distance(m_pcontext, "/home/bsp/hsa_jni/kernels/distance.brig")
+			       m_square_distance(m_pcontext, "/home/bsp/hsa_jni/kernels/distance.brig"),
+				   m_per_attribute_distances(m_pcontext, "/home/bsp/hsa_jni/kernels/numeric_distance.brig",
+						   "/home/bsp/hsa_jni/kernels/nominal_distance.brig"  ),
+				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig")
 {
 }
 	~Algorithms()
 	{
 	}
 	std::shared_ptr<HSAContext> m_pcontext;
+	MinMaxValue m_min_max_value;
 	MaxValue m_max_value;
 	MinValue m_min_value;
 	MergeSort m_merge_sort;
 	SquareDistance m_square_distance;
+	PerAttributeDistance m_per_attribute_distances;
+	Dump m_dump;
 };
 
 #endif /* CONTEXT_HPP_ */

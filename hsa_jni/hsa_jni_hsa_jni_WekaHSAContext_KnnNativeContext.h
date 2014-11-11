@@ -10,18 +10,18 @@ extern "C" {
 /*
  * Class:     hsa_jni_hsa_jni_WekaHSAContext_KnnNativeContext
  * Method:    knn
- * Signature: ([D[D[DIII[D[I)V
+ * Signature: ([D[D[DIIII[D[I)V
  */
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_knn
-  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jint, jint, jint, jdoubleArray, jintArray);
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jint, jint, jint, jint, jdoubleArray, jintArray);
 
 /*
  * Class:     hsa_jni_hsa_jni_WekaHSAContext_KnnNativeContext
  * Method:    rescanRanges
- * Signature: ([D[DIIIII)V
+ * Signature: ([D[DIIII)V
  */
 JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeContext_rescanRanges
-  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jint, jint, jint, jint, jint);
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

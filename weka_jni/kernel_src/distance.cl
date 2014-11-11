@@ -7,16 +7,12 @@
 __kernel void square_distance(__global const double* input,
 						__global const double* samples,
 						__global const double2* ranges,
-						__global double* result,
-						const int window_size, 
+						__global double* result, 
 						const int element_count, 
 						const int numerics_size)
 {     
 	   
 	int result_offset = get_global_id(0);
-	if (result_offset >= window_size) // handle last group
-		return;
-		
 	int vector_offset = element_count * result_offset;
 	double point_distance = 0;
 	double val;

@@ -35,21 +35,61 @@ public class App
     	
     	
     	WekaHSAContext context = new WekaHSAContext();
-    	
+    	long start, end;
     	KnnNativeContext knn = context.create( instances, 8192);
+    	
+    	int window_size = 4*65535;
+    	int num_attrs = 16;
+    	int num_numerics = 10;
+    	
+    	
+    	double[] window = new double[ window_size * num_attrs ];
+    	double[] ranges = new double[ num_attrs * 2];
+    	
+    	//long start = System.currentTimeMillis();
+    	
+    	for (int i = 0 ; i < 1000 ; i ++ )
+    		knn.rescanAllSeq();
+    	//long end = System.currentTimeMillis();
+    	
+    	//double diff = end - start;
+    	//System.out.println("Done in "+ (diff/1000) + "val "+ knn.m_ranges[0]);
+    	
+    	
+    	//start = System.currentTimeMillis();
+    	
+    	for (int i = 0 ; i < 1000 ; i ++ )
+    		knn.rescanAll();
+    	//end = System.currentTimeMillis();
+    	
+    	//diff = end - start;
+    	//System.out.println("Done in "+ (diff/1000));
+    	//System.exit(0);
+    	
     	Instance inst;
     	int count = 0;
     	Instance test = loader.getNextInstance(instances);
-
+/*
     	{
-	    	long start = System.currentTimeMillis();
-	    	for (int i = 0 ;i < 1000 ; ++i)
-	    		knn.addInstance(test);
-			long end = System.currentTimeMillis();
-	    	System.out.println("Time "+ (end -start));
+    		int iters = knn.m_instances.length;
+	    	for (int i = 0 ;i < iters; ++i)
+	    		knn.addInstance(test, true);
+
+	    	start = System.currentTimeMillis();
+	    	for (int i = 0; i < 1000 ; ++i)
+	    		knn.rescanAll();
+			end = System.currentTimeMillis();
+	    	System.out.println("1000 iterations done in  "+ (end-start));
+	    	
+	    	start = System.currentTimeMillis();
+	    	for (int i = 0; i < 1000 ; ++i)
+	    		knn.rescanAllSeq();
+			end = System.currentTimeMillis();
+	    	System.out.println("1000 iterations done in  "+ (end -start));
+
     	}
     	 
-    	
+  */  	
     	
 		while ( (inst = loader.getNextInstance(instances)) != null)
 		{
@@ -57,10 +97,12 @@ public class App
 		}
 		
 		
-		
+		start = System.currentTimeMillis();
 		for (int i = 0 ;i < 1000 ;  ++i)
 			knn.computeKnn(test);
-		
+		end = System.currentTimeMillis();
+    	System.out.println("1000 iterations done in  "+ 1000/((end -start)/1000));
+	/*	
 		System.out.println("Check ranges");
 		
 		long start = System.currentTimeMillis();

@@ -31,8 +31,16 @@ public class WekaHSAContext {
 	}
 	
 	
+	/** 
+	 * Provides sliding window backed by native implementation 
+	 * In-Memory layout 
+	 *  Numeric Attribute 1 [ Instance1 .. InstanceN ... Instance WindowSize] ... Numeric Attribute N [1..N .. Instance Window Size] Nominal Attribute1 [] ... Nominal Attribute N   
+	 * @author bsp
+	 *
+	 */
 	public class KnnNativeContext
 	{
+		
 		public KnnNativeContext(Instances model, int size)
 		{
 			m_model = model;
@@ -67,10 +75,13 @@ public class WekaHSAContext {
 			}
 			m_index = 0;
 			m_current_size = 0;
+			m_is_changed = false;
 		}
 		
 		public void computeKnn(Instance test)
 		{
+			rescanAll();
+			
 			double [] testArr = new double[m_nominals.length + m_numerics.length];
 			int offset = 0;
 			double[] ranges = new double[ m_ranges.length];
@@ -89,38 +100,46 @@ public class WekaHSAContext {
 			for (int i = 0; i < m_nominals.length; i ++ ) 
 				testArr[offset++] = test.value(m_nominals[i]);
 			
-			knn (testArr,m_window, ranges,m_numerics.length,
-					m_nominals.length + m_numerics.length, 
-					m_instances.length, 
-					m_tmp_distances, m_tmp_indexes);
+			knn (testArr, // test instance
+				 m_window, // window
+				 ranges, // value ranges
+				 m_numerics.length, // numerics
+	     	     m_nominals.length + m_numerics.length, // full instance size
+	     	     m_instances.length, // full window size 
+	     	     m_current_size,
+			     m_tmp_distances, // distances array 
+			     m_tmp_indexes // indexes array
+			     );
 			
 		}
 		
+		public void rescanAll()
+		{
+			if (m_is_changed)
+				rescanRanges(m_window, m_ranges, m_numerics.length, m_numerics.length+ m_nominals.length,m_instances.length, m_current_size);
+			m_is_changed = false;
+		}
+		
+
+		
 		public void addInstance(Instance inst)
 		{
-			boolean need_rescan = false;
-			
 			m_instances[m_index] = inst;
-			int offset = m_index * (m_nominals.length + m_numerics.length);
 			for (int i = 0; i < m_numerics.length; i ++ ) 
 			{
 				int idx = m_numerics[i];
-				double val  = m_window[offset];
-				if (m_ranges[i*2] == val)
-					rescanRanges(m_window, m_ranges,m_numerics.length, m_numerics.length + m_nominals.length, m_current_size, i,0);
-				else if (m_ranges[i*2+1] == val) 
-					rescanRanges(m_window, m_ranges,m_numerics.length, m_numerics.length + m_nominals.length, m_current_size, i,1);
+				int offset = i * m_instances.length+m_index;
 				m_window[offset] = inst.value(idx);
 				if (m_ranges[i*2] > m_window[offset])
 					m_ranges[i*2] = m_window[offset];
 				else if (m_ranges[i*2+1] < m_window[offset])
 					m_ranges[i*2+1] = m_window[offset];
-				++offset;
 			}
 			
 			for (int i = 0; i < m_nominals.length; i ++ ) 
 			{
-				m_window[offset++] = inst.value(m_nominals[i]);
+				int offset = (m_instances.length * m_numerics.length) + i*m_nominals.length + m_index;
+				m_window[offset] = inst.value(m_nominals[i]);
 			}
 			
 			++m_index;
@@ -130,8 +149,17 @@ public class WekaHSAContext {
 				m_index = 0;
 		}
 		
-		private native void knn(double[] instance, double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, double[] result_distance, int[] result_index);
-		private native void rescanRanges(double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, int attribute, int is_max );
+
+		private native void knn(double[] instance, double[] m_window, double[] m_ranges, 
+								int numerics_size,
+								int instance_size,
+								int window_size,
+								int current_size,
+								double[] result_distance, 
+								int[] result_index);
+		public native void rescanRanges(double[] m_window, double[] m_ranges, int numerics_size,int instance_size, 
+								int window_size, 
+								int current_size);
 		
 		public Instances m_model;
 		public Instance[] m_instances;
@@ -141,9 +169,52 @@ public class WekaHSAContext {
 		private Integer[] m_nominals;
 		private int m_index;
 		private int m_current_size;
+		private boolean m_is_changed;
 		
 		private double[] m_tmp_distances;
 		private int[] m_tmp_indexes;
+		
+		
+		public void rescanRangesSeq(double[] m_window, double[] m_ranges, int numerics_size,int instance_size, int window_size, int attribute, int is_max )
+		{
+			double result;
+			if (is_max > 0)
+				result = Double.MIN_VALUE;
+			else
+				result = Double.MAX_VALUE;
+			int offset = attribute;
+			for (int i = 0 ;i < window_size ; ++i)
+			{
+				double test = m_window[ i * instance_size + offset];
+				if (is_max > 0)
+				{
+					if (test > result)
+						result = test;
+				}
+				else
+				{
+					if (test < result)
+						result = test;
+				}
+			}
+			if (is_max>0)
+				m_ranges[ offset * 2+1] = result;
+			else
+				m_ranges[ offset * 2] = result;
+			
+				
+		}
+		
+		public void rescanAllSeq()
+		{
+			for (int i = 0 ;i < m_numerics.length; ++i)
+			{
+				rescanRangesSeq(m_window, m_ranges, m_numerics.length, m_numerics.length+ m_nominals.length,m_current_size, i, 1);
+				rescanRangesSeq(m_window, m_ranges, m_numerics.length, m_numerics.length+ m_nominals.length,m_current_size, i, 0);
+			}
+		}
+
+	
 	}
 	
 
