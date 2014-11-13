@@ -23,9 +23,11 @@
    if (index<width && (index + width)<length){\
       VALUE_TYPE mine = scratch[index];\
       VALUE_TYPE other = scratch[(index + width)];\
-      stat = (other<mine)?1:0;\
-      scratch[index]  = (stat)?mine:other;\
-      scratch_index[index]  = (stat)?scratch_index[index]:scratch_index[(index + width)];\
+      if (other > mine)\
+      {\
+      	scratch[index] = other;\
+      	scratch_index[index]  = scratch_index[(index + width)];\
+      }\
    }\
    barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -36,6 +38,7 @@ __kernel void run(
    int offset, 
    __global int *result
 ){
+
   int local_index = get_local_id(0);
   __local VALUE_TYPE scratch[GROUP_SIZE];
   __local int scratch_index[GROUP_SIZE];
@@ -43,13 +46,14 @@ __kernel void run(
   int gx = get_global_id(0);
   int igx = ((gx * stride) + offset);
   int gloId = gx; 
-  bool stat;
+  uchar stat;
   
   VALUE_TYPE accumulator;
   if (gloId<length){
-     accumulator = input[((gx * stride) + offset)];
+     accumulator = input[igx];
      gx = gx + get_global_size(0);
   }
+  
   for (; gx<length; gx = gx + get_global_size(0)){
      VALUE_TYPE element = input[((gx * stride) + offset)];
      stat = (element<accumulator)?1:0;
@@ -60,7 +64,7 @@ __kernel void run(
   scratch[local_index]  = accumulator;
   scratch_index[local_index]  = igx;
   barrier(CLK_LOCAL_MEM_FENCE);
-  int tail = length - (get_group_id(0) * get_local_size(0));
+	 int tail = length - (get_group_id(0) * get_local_size(0));
   REDUCE_STEP_MAX( tail, local_index, 128);
   REDUCE_STEP_MAX( tail, local_index, 64);
   REDUCE_STEP_MAX( tail, local_index, 32);
@@ -69,11 +73,10 @@ __kernel void run(
   REDUCE_STEP_MAX( tail, local_index, 4);
   REDUCE_STEP_MAX( tail, local_index, 2);
   REDUCE_STEP_MAX( tail, local_index, 1);
-  if (gloId>=length){
-     return;
-  }
+
   if (local_index==0){
      result[get_group_id(0)]  = scratch_index[0];
   }
+  
   return;
 }
