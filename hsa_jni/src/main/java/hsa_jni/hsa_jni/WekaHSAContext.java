@@ -1,6 +1,7 @@
 package hsa_jni.hsa_jni;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -65,8 +66,6 @@ public class WekaHSAContext {
 			m_nominals = nominals.toArray(new Integer[nominals.size()]);
 			m_window = new double[ size * (m_numerics.length + m_nominals.length)];
 			m_ranges = new double[ m_numerics.length * 2];
-			m_tmp_distances = new double [size];
-			m_tmp_indexes = new int[size];
 			
 			for (int i = 0 ;i < m_numerics.length; ++i)
 			{
@@ -78,7 +77,7 @@ public class WekaHSAContext {
 			m_is_changed = false;
 		}
 		
-		public void computeKnn(Instance test)
+		public void computeKnn(Instance test, double[] distances, int[] indices)
 		{
 			rescanAll();
 			
@@ -100,15 +99,15 @@ public class WekaHSAContext {
 			for (int i = 0; i < m_nominals.length; i ++ ) 
 				testArr[offset++] = test.value(m_nominals[i]);
 			
-			knn (testArr, // test instance
-				 m_window, // window
+			knn (testArr, 
+				m_window, // window
 				 ranges, // value ranges
 				 m_numerics.length, // numerics
 	     	     m_nominals.length + m_numerics.length, // full instance size
 	     	     m_instances.length, // full window size 
 	     	     m_current_size,
-			     m_tmp_distances, // distances array 
-			     m_tmp_indexes // indexes array
+			     distances, // distances array 
+			     indices // indexes array
 			     );
 			
 		}
@@ -212,6 +211,17 @@ public class WekaHSAContext {
 				rescanRangesSeq(m_window, m_ranges, m_numerics.length, m_numerics.length+ m_nominals.length,m_current_size, i, 1);
 				rescanRangesSeq(m_window, m_ranges, m_numerics.length, m_numerics.length+ m_nominals.length,m_current_size, i, 0);
 			}
+		}
+
+		public void reset() {
+			Arrays.fill(m_instances, null);
+			Arrays.fill(m_window, 0);
+			Arrays.fill(m_ranges, 0);
+			m_current_size = 0;
+		}
+
+		public Instance[] instances() {
+			return m_instances;
 		}
 
 	

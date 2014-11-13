@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -36,7 +37,7 @@ public class App
     	
     	WekaHSAContext context = new WekaHSAContext();
     	long start, end;
-    	KnnNativeContext knn = context.create( instances, 8192);
+    	KnnNativeContext knn = context.create( instances, 16*8192);
     	
     	int window_size = 4*65535;
     	int num_attrs = 16;
@@ -96,12 +97,13 @@ public class App
 			knn.addInstance(inst);
 		}
 		
+		TimeUnit nano = TimeUnit.NANOSECONDS; 
 		
-		start = System.currentTimeMillis();
-		for (int i = 0 ;i < 1000 ;  ++i)
-			knn.computeKnn(test);
-		end = System.currentTimeMillis();
-    	System.out.println("1000 iterations done in  "+ 1000/((end -start)/1000));
+		start = System.nanoTime();
+	//	for (int i = 0 ;i < 1000 ;  ++i)
+	//		knn.computeKnn(test);
+		end = System.nanoTime();
+    	System.out.println("1000 iterations done in  "+nano.toMillis(end-start));
 	/*	
 		System.out.println("Check ranges");
 		
