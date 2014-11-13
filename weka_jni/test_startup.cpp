@@ -45,12 +45,13 @@ int main()
 		ranges[i*2+1]++;
 	}
 
+	test.m_square_distance.calculate(test_vector, test_sample, window_size, ranges, instance_size, numeric_size, distances);
 
-
-	test.m_per_attribute_distances.distance(test_vector,
+/*	test.m_per_attribute_distances.distance(test_vector,
 			test_sample, ranges,
 			numeric_size, instance_size - numeric_size,
 			window_size, window_size, distances);
+*/
 for (int i = 0 ;  i < window_size; ++i)
 	printf(" %f \n", distances[i]);
 /*	Algorithms test(std::shared_ptr<HSAContext>(HSAContext::Create()));

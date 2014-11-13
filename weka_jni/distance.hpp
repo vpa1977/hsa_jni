@@ -27,17 +27,39 @@ public:
 
 
 public:
-	void distance(double* test, double* samples,double * ranges, size_t numerics, int nominals, size_t window_size,size_t current_size, double* result)
+	void distance(double* test, double* samples,double * ranges, size_t numerics, int instance_size, size_t window_size,size_t current_size, double* result)
 	{
-		size_t global_dims[3] = {current_size,1,1};
-		size_t local_dims[3] = {256,1,1};
-		std::vector<double> tmp;
-		tmp.resize(window_size * numerics)
-		int i =0;
+		size_t global_dims[3] = {current_size,instance_size,1};
+		size_t local_dims[3] = {256,256,1};
+		size_t global_dims1[3] = { current_size, 1, 1};
+		size_t local_dims1[3] = {256,1,1};
+		tmp.resize(window_size * (instance_size));
+		m_numeric_dispatch->clearArgs();
+		FIX_ARGS_STABLE(m_numeric_dispatch);
+		m_numeric_dispatch->pushPointerArg(samples);
+		m_numeric_dispatch->pushPointerArg(test);
+		m_numeric_dispatch->pushPointerArg(ranges);
+		m_numeric_dispatch->pushIntArg( window_size );
+		m_numeric_dispatch->pushIntArg( numerics );
+		m_numeric_dispatch->pushIntArg( instance_size );
+		m_numeric_dispatch->pushPointerArg(&tmp[0]);
+		m_numeric_dispatch->setLaunchAttributes(2, global_dims, local_dims);
+		m_numeric_dispatch->dispatchKernelWaitComplete();
+
+		m_nominal_dispatch->clearArgs();
+		FIX_ARGS_STABLE(m_nominal_dispatch);
+		m_nominal_dispatch->pushPointerArg( &tmp[0]);
+		m_nominal_dispatch->pushIntArg(instance_size);
+		m_nominal_dispatch->pushPointerArg( result );
+		m_nominal_dispatch->setLaunchAttributes(1, global_dims1, local_dims1);
+		m_nominal_dispatch->dispatchKernelWaitComplete();
+
+
+/*		int i =0;
 		for (;i < numerics ; ++i)
 		{
 			int samples_offset = i*window_size;
-			m_numeric_dispatch->clearArgs();
+
 			FIX_ARGS_STABLE(m_numeric_dispatch);
 			m_numeric_dispatch->pushPointerArg(samples);
 			m_numeric_dispatch->pushDoubleArg(test[i]);
@@ -64,11 +86,12 @@ public:
 			m_nominal_dispatch->pushPointerArg( result );
 			m_nominal_dispatch->setLaunchAttributes(1, global_dims, local_dims);
 			m_nominal_dispatch->dispatchKernelWaitComplete();
-		}
+		}*/
 
 	}
 
 private:
+	std::vector<double> tmp;
 	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Dispatch* m_numeric_dispatch;
 	HSAContext::Kernel* m_numeric_kernel;

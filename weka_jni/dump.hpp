@@ -27,7 +27,7 @@ public:
 		m_local_dispatch->clearArgs();
 		FIX_ARGS_STABLE(m_local_dispatch);
 		m_local_dispatch->pushPointerArg(arg);
-		size_t global_dims[3] = {global_size,1,1};
+		size_t global_dims[3] = {(size_t)global_size,1,1};
 		size_t local_dims[3] = {256,1,1};
 		m_local_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
 		m_local_dispatch->dispatchKernelWaitComplete();
