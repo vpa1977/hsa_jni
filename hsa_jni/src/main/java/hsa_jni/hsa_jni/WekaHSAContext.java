@@ -123,8 +123,10 @@ public class WekaHSAContext {
 		
 		public void addInstance(Instance inst)
 		{
+			m_is_changed = true;
 			m_instances[m_index] = inst;
-			for (int i = 0; i < m_numerics.length; i ++ ) 
+			int i;
+			for (i = 0; i < m_numerics.length; i ++ ) 
 			{
 				int idx = m_numerics[i];
 				int offset = i * m_instances.length+m_index;
@@ -135,10 +137,10 @@ public class WekaHSAContext {
 					m_ranges[i*2+1] = m_window[offset];
 			}
 			
-			for (int i = 0; i < m_nominals.length; i ++ ) 
+			for (; i < m_nominals.length + m_numerics.length; i ++ ) 
 			{
-				int offset = (m_instances.length * m_numerics.length) + i*m_nominals.length + m_index;
-				m_window[offset] = inst.value(m_nominals[i]);
+				int offset = i * m_instances.length+m_index;
+				m_window[offset] = inst.value(m_nominals[i - m_numerics.length]);
 			}
 			
 			++m_index;

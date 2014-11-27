@@ -1,6 +1,7 @@
 package hsa_jni.hsa_jni;
 
 import weka.core.Attribute;
+import weka.core.EuclideanDistance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Utils;
@@ -53,11 +54,32 @@ public class KnnGpuClassifier extends  AbstractClassifier {
         }
 		
 	}
+	
+	void printK(Instance a)
+	{
+		System.out.println("Target:" +a);
+		EuclideanDistance dist = new EuclideanDistance(m_native_context.instances()[0].dataset());
+		for (int i = 0 ;i < m_native_context.instances().length ;++i)
+			dist.update(m_native_context.instances()[i]);
+		for(int i = 0;i < 32 ; ++i)
+		{
+			System.out.println("Src:" + m_native_context.instances()[i] + " distance " + Math.sqrt(findDistance(i)) + " euc "+ dist.distance(a,m_native_context.instances()[i] ));
+		}
+	}
+	
+	double findDistance(int idx)
+	{
+		for (int i = 0 ;i < m_tmp_indexes.length ; ++i)
+			if (m_tmp_indexes[i]  == idx)
+				return m_tmp_distances[i];
+		return 0;
+	}
 
 	@Override
 	public double[] getVotesForInstance(Instance arg0) {
-		
 		m_native_context.computeKnn(arg0, m_tmp_distances, m_tmp_indexes);
+	//	printK(arg0);
+		//1.000000 4.000000 4.000000 4.000000 9.000000 
 		try {
 			return makeDistribution(m_tmp_indexes, m_tmp_distances);
 		} catch (Exception e) {
