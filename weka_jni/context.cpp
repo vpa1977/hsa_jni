@@ -64,7 +64,7 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeConte
 		  numerics_size, instance_size, window_size,current_size, distances_ptr );
 		//g_algorithms.m_square_distance.calculate(instance_ptr, window_ptr, window_size,
 			///	ranges_ptr, instance_size, numerics_size, distances_ptr);
-		g_algorithms.m_merge_sort.sort(distances_ptr, indexes_ptr, window_size);
+		g_algorithms.m_merge_sort.sort(distances_ptr, indexes_ptr, current_size);
 	}
 
 	env->ReleasePrimitiveArrayCritical(window, window_ptr, 0);

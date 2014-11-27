@@ -17,10 +17,10 @@ __kernel void run(__global const double* samples,
 	double range_min = range[ attribute * 2];
 	double range_max = range[ attribute *2 +1];
 	double width = (range_max - range_min);
-	double val = 0;
+	double val = 0; 
 	if (attribute < numerics)
 		val = width > 0 ? (test_value[attribute] - range_min) / width  - (samples[offset] - range_min)/width : 0;
 	else
-		val = test_value[attribute] == samples[offset] ? 0 : 1;
+		val = samples[offset] - test_value[attribute] != 0 ? 1 : 0;
 	result[window_pos*instance_size + attribute] = val*val;
 }

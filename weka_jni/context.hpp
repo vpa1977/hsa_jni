@@ -23,6 +23,7 @@
 #include "merge_sort.hpp"
 #include "distance.hpp"
 #include "dump.hpp"
+#include "reduce.hpp"
 
 
 struct Algorithms
@@ -37,7 +38,8 @@ struct Algorithms
 			       m_square_distance(m_pcontext, "/home/bsp/hsa_jni/kernels/distance.brig"),
 				   m_per_attribute_distances(m_pcontext, "/home/bsp/hsa_jni/kernels/numeric_distance.brig",
 						   "/home/bsp/hsa_jni/kernels/nominal_distance.brig"  ),
-				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig")
+				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig"),
+				   m_reduce(m_pcontext, "/home/bsp/hsa_jni/kernels/reduce.brig")
 {
 }
 	~Algorithms()
@@ -51,6 +53,8 @@ struct Algorithms
 	SquareDistance m_square_distance;
 	PerAttributeDistance m_per_attribute_distances;
 	Dump m_dump;
+	Reduce m_reduce;
+
 };
 
 #endif /* CONTEXT_HPP_ */

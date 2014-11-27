@@ -1,6 +1,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
-#define GROUP_SIZE 512
+#define GROUP_SIZE 256
 
 uint lowerBoundBinarylocal(__local double* data, uint left, uint right, double searchVal){
    uint firstIndex = left;

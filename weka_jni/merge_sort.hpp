@@ -40,7 +40,7 @@ public:
 	{
 		size_t vecSize = size;
 		size_t globalRange = vecSize;
-		size_t localRange = 512;
+		size_t localRange = 256;
 		size_t modlocalRange = (globalRange & (localRange - 1));
 		if (modlocalRange > 0) {
 			globalRange &= ~modlocalRange;
@@ -62,7 +62,7 @@ public:
 		offsets.resize( data.size() );
 		size_t vecSize = data.size();
 		size_t globalRange = vecSize;
-		size_t localRange = 512;
+		size_t localRange = 256;
 		size_t modlocalRange = (globalRange & (localRange - 1));
 		if (modlocalRange > 0) {
 			globalRange &= ~modlocalRange;

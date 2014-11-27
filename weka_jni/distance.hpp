@@ -27,13 +27,13 @@ public:
 
 
 public:
-	void distance(double* test, double* samples,double * ranges, size_t numerics, int instance_size, size_t window_size,size_t current_size, double* result)
+	void distance(double* test, double* samples,double * ranges, size_t numerics, size_t instance_size, size_t window_size,size_t current_size, double* result)
 	{
 		size_t global_dims[3] = {current_size,instance_size,1};
 		size_t local_dims[3] = {256,256,1};
 		size_t global_dims1[3] = { current_size, 1, 1};
 		size_t local_dims1[3] = {256,1,1};
-		tmp.resize(window_size * (instance_size));
+		tmp.resize(current_size * (instance_size));
 		m_numeric_dispatch->clearArgs();
 		FIX_ARGS_STABLE(m_numeric_dispatch);
 		m_numeric_dispatch->pushPointerArg(samples);
@@ -45,7 +45,6 @@ public:
 		m_numeric_dispatch->pushPointerArg(&tmp[0]);
 		m_numeric_dispatch->setLaunchAttributes(2, global_dims, local_dims);
 		m_numeric_dispatch->dispatchKernelWaitComplete();
-
 		m_nominal_dispatch->clearArgs();
 		FIX_ARGS_STABLE(m_nominal_dispatch);
 		m_nominal_dispatch->pushPointerArg( &tmp[0]);
@@ -53,7 +52,6 @@ public:
 		m_nominal_dispatch->pushPointerArg( result );
 		m_nominal_dispatch->setLaunchAttributes(1, global_dims1, local_dims1);
 		m_nominal_dispatch->dispatchKernelWaitComplete();
-
 
 /*		int i =0;
 		for (;i < numerics ; ++i)
