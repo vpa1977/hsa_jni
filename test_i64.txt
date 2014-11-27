@@ -1,0 +1,101 @@
+/home/bsp/git_repository/hsa_jni/target/classes:/home/bsp/.m2/repository/junit/junit/4.4/junit-4.4.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/weka/weka-dev/3.7.10/weka-dev-3.7.10.jar:/home/bsp/.m2/repository/net/sf/squirrel-sql/thirdparty-non-maven/java-cup/0.11a/java-cup-0.11a.jar:/home/bsp/.m2/repository/org/pentaho/pentaho-commons/pentaho-package-manager/1.0.8/pentaho-package-manager-1.0.8.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl/1.0.0-RC3/javacl-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl-core/1.0.0-RC3/javacl-core-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/opencl4java/1.0.0-RC3/opencl4java-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/bridj/0.6.2/bridj-0.6.2.jar:/home/bsp/.m2/repository/com/google/android/tools/dx/1.7/dx-1.7.jar:/home/bsp/.m2/repository/com/nativelibs4java/nativelibs4java-utils/1.5/nativelibs4java-utils-1.5.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/moa/moa/2013.11/moa-2013.11.jar:/home/bsp/.m2/repository/com/googlecode/sizeofag/sizeofag/1.0.0/sizeofag-1.0.0.jar
+Test : window=1024 k =16
+	 : test_size=1000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+/home/bsp/git_repository/hsa_jni/target/classes:/home/bsp/.m2/repository/junit/junit/4.4/junit-4.4.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/weka/weka-dev/3.7.10/weka-dev-3.7.10.jar:/home/bsp/.m2/repository/net/sf/squirrel-sql/thirdparty-non-maven/java-cup/0.11a/java-cup-0.11a.jar:/home/bsp/.m2/repository/org/pentaho/pentaho-commons/pentaho-package-manager/1.0.8/pentaho-package-manager-1.0.8.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl/1.0.0-RC3/javacl-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl-core/1.0.0-RC3/javacl-core-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/opencl4java/1.0.0-RC3/opencl4java-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/bridj/0.6.2/bridj-0.6.2.jar:/home/bsp/.m2/repository/com/google/android/tools/dx/1.7/dx-1.7.jar:/home/bsp/.m2/repository/com/nativelibs4java/nativelibs4java-utils/1.5/nativelibs4java-utils-1.5.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/moa/moa/2013.11/moa-2013.11.jar:/home/bsp/.m2/repository/com/googlecode/sizeofag/sizeofag/1.0.0/sizeofag-1.0.0.jar
+Test : window=1024 k =16
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+Can not access instrumentation environment.
+Please check if jar file containing SizeOfAgent class is 
+specified in the java's "-javaagent" command line argument.
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,4.471964373,22361.537717912408,4.471964373,22361.537717912408,32.290406607,309.689503811704,10000.0,52.59,4.949872234664783,4.338175948345454,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 16 -W 1024 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,131.239555978,761.9653941587796,131.239555978,761.9653941587796,27.457822755,364.19493596516224,10000.0,52.66,5.082459362801347,4.4794188861985464,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=2048 k =16
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,4.577503753,21845.967889040418,4.577503753,21845.967889040418,59.815766894,167.18000151567196,10000.0,53.05,6.014668838131515,5.266343825665862,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 16 -W 2048 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,338.429956247,295.48211721250794,338.429956247,295.48211721250794,50.585418017,197.68542777761266,10000.0,53.02,5.95790124778933,5.205811138014536,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=4096 k =16
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,5.153399334,19404.667389201008,5.153399334,19404.667389201008,105.733968141,94.57698576738031,10000.0,52.56999999999999,5.309737976093568,4.297820823244549,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 16 -W 4096 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,251.029092548,398.360201939059,251.029092548,398.360201939059,92.506524185,108.1004835940156,10000.0,52.580000000000005,5.328602185795289,4.317998385795012,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=8192 k =16
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,6.899107065,14494.629385781245,6.899107065,14494.629385781245,210.243865185,47.563813532445735,10000.0,52.59,5.4485412710237044,4.338175948345454,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 16 -W 8192 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,469.228362957,213.11584698294118,469.228362957,213.11584698294118,170.593003712,58.61905108888455,10000.0,52.59,5.452930915268275,4.338175948345454,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=1024 k =32
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,4.336372695,23060.748471943785,4.336372695,23060.748471943785,29.9993247,333.34083683557054,10000.0,53.25,5.434481124762875,5.66989507667474,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 32 -W 1024 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,62.446981815,1601.3584178695987,62.446981815,1601.3584178695987,30.209611409,331.02047770865454,10000.0,53.25,5.432254499098411,5.66989507667474,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=2048 k =32
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,4.504102141,22201.98318544304,4.504102141,22201.98318544304,55.671168748,179.62619116666653,10000.0,53.68000000000001,6.545227650942882,6.537530266343844,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 32 -W 2048 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,138.621987487,721.386280869606,138.621987487,721.386280869606,54.903135298,182.1389606572118,10000.0,53.669999999999995,6.523954119462911,6.517352703793381,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=4096 k =32
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,5.125459752,19510.444884671877,5.125459752,19510.444884671877,102.484932069,97.57531959202845,10000.0,53.849999999999994,7.194439854998906,6.880548829701376,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 32 -W 4096 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,253.300281393,394.7883494248795,253.300281393,394.7883494248795,101.974540062,98.06369309359033,10000.0,53.900000000000006,7.2939025812152725,6.981436642453606,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=8192 k =32
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,6.914137648,14463.119638488286,6.914137648,14463.119638488286,206.018445591,48.53934302490852,10000.0,53.43,6.457129565613166,6.033091202582735,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 32 -W 8192 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,467.093475401,214.0899097641001,467.093475401,214.0899097641001,183.200934438,54.584874420410024,10000.0,53.480000000000004,6.558654470334807,6.133979015334965,100000.0,0.0
+---------------------------------------------------------------------------
+Test : window=1024 k =64
+	 : test_size=10000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 64 -u 64 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
