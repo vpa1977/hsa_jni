@@ -1,0 +1,130 @@
+version 0:20140528:$full:$large;
+extension "amd:gcn";
+extension "IMAGE";
+
+decl prog function &abort()();
+
+prog kernel &__OpenCL_run_kernel(
+	kernarg_u64 %global_offset_0,
+	kernarg_u64 %global_offset_1,
+	kernarg_u64 %global_offset_2,
+	kernarg_u64 %printf_buffer,
+	kernarg_u64 %vqueue_pointer,
+	kernarg_u64 %aqlwrap_pointer,
+	kernarg_u64 %samples,
+	kernarg_u64 %test_value,
+	kernarg_u64 %range,
+	kernarg_u32 %window_size,
+	kernarg_u32 %numerics,
+	kernarg_u32 %instance_size,
+	kernarg_u64 %result)
+{
+	pragma  "AMD RTI", "ARGSTART:__OpenCL_run_kernel";
+	pragma  "AMD RTI", "version:3:1:104";
+	pragma  "AMD RTI", "device:generic";
+	pragma  "AMD RTI", "uniqueid:1027";
+	pragma  "AMD RTI", "memory:private:0";
+	pragma  "AMD RTI", "memory:region:0";
+	pragma  "AMD RTI", "memory:local:0";
+	pragma  "AMD RTI", "value:global_offset_0:u64:1:1:0";
+	pragma  "AMD RTI", "value:global_offset_1:u64:1:1:16";
+	pragma  "AMD RTI", "value:global_offset_2:u64:1:1:32";
+	pragma  "AMD RTI", "pointer:printf_buffer:u8:1:1:48:uav:8:1:RW:0:0:0";
+	pragma  "AMD RTI", "value:vqueue_pointer:u64:1:1:64";
+	pragma  "AMD RTI", "value:aqlwrap_pointer:u64:1:1:80";
+	pragma  "AMD RTI", "pointer:samples:double:1:1:96:uav:8:8:RW:0:0:0";
+	pragma  "AMD RTI", "pointer:test_value:double:1:1:112:p:8:8:RW:0:0:0";
+	pragma  "AMD RTI", "pointer:range:double:1:1:128:p:8:8:RW:0:0:0";
+	pragma  "AMD RTI", "value:window_size:u32:1:1:144";
+	pragma  "AMD RTI", "value:numerics:u32:1:1:160";
+	pragma  "AMD RTI", "value:instance_size:u32:1:1:176";
+	pragma  "AMD RTI", "pointer:result:double:1:1:192:uav:8:8:RW:0:0:0";
+	pragma  "AMD RTI", "function:1:0";
+	pragma  "AMD RTI", "memory:64bitABI";
+	pragma  "AMD RTI", "uavid:8";
+	pragma  "AMD RTI", "privateid:8";
+	pragma  "AMD RTI", "enqueue_kernel:0";
+	pragma  "AMD RTI", "kernel_index:0";
+	pragma  "AMD RTI", "reflection:0:size_t";
+	pragma  "AMD RTI", "reflection:1:size_t";
+	pragma  "AMD RTI", "reflection:2:size_t";
+	pragma  "AMD RTI", "reflection:3:size_t";
+	pragma  "AMD RTI", "reflection:4:size_t";
+	pragma  "AMD RTI", "reflection:5:size_t";
+	pragma  "AMD RTI", "reflection:6:double*";
+	pragma  "AMD RTI", "reflection:7:double*";
+	pragma  "AMD RTI", "reflection:8:double*";
+	pragma  "AMD RTI", "reflection:9:int";
+	pragma  "AMD RTI", "reflection:10:int";
+	pragma  "AMD RTI", "reflection:11:int";
+	pragma  "AMD RTI", "reflection:12:double*";
+	pragma  "AMD RTI", "ARGEND:__OpenCL_run_kernel";
+
+@__OpenCL_run_kernel_entry:
+	// BB#0:                                // %entry
+	workitemabsid_u32	$s0, 0;
+	cvt_u64_u32	$d0, $s0;
+	ld_kernarg_align(8)_width(all)_u64	$d1, [0];
+	add_u64	$d0, $d0, $d1;
+	cvt_u32_u64	$s1, $d0;
+	ld_kernarg_align(4)_width(all)_u32	$s0, [%window_size];
+	rem_s32	$s0, $s1, $s0;
+	shl_u32	$s2, $s0, 1;
+	ld_kernarg_align(8)_width(all)_u64	$d0, [%result];
+	cvt_s64_s32	$d1, $s2;
+	ld_kernarg_align(8)_width(all)_u64	$d2, [%test_value];
+	ld_kernarg_align(8)_width(all)_u64	$d3, [%samples];
+	ld_kernarg_align(4)_width(all)_u32	$s2, [%numerics];
+	ld_kernarg_align(8)_width(all)_u64	$d4, [%range];
+	shl_u64	$d1, $d1, 3;
+	add_u64	$d5, $d4, $d1;
+	ld_v2_align(8)_f64	($d4, $d1), [$d5];
+	cmp_ge_b1_s32	$c0, $s0, $s2;
+	cbr_b1	$c0, @BB0_4;
+	// BB#1:                                // %if.then
+	sub_f64	$d5, $d1, $d4;
+	cvt_s64_s32	$d1, $s1;
+	cmp_leu_b1_f64	$c0, $d5, 0D0000000000000000;
+	cbr_b1	$c0, @BB0_2;
+	// BB#3:                                // %cond.true
+	shl_u64	$d6, $d1, 3;
+	add_u64	$d3, $d3, $d6;
+	ld_global_align(8)_f64	$d3, [$d3];
+	sub_f64	$d3, $d3, $d4;
+	div_f64	$d3, $d3, $d5;
+	cvt_s64_s32	$d6, $s0;
+	shl_u64	$d6, $d6, 3;
+	add_u64	$d2, $d2, $d6;
+	ld_align(8)_f64	$d2, [$d2];
+	sub_f64	$d2, $d2, $d4;
+	div_f64	$d2, $d2, $d5;
+	sub_f64	$d2, $d2, $d3;
+	br	@BB0_5;
+
+@BB0_4:
+	// %if.else
+	cvt_s64_s32	$d1, $s1;
+	shl_u64	$d4, $d1, 3;
+	add_u64	$d3, $d3, $d4;
+	ld_global_align(8)_f64	$d3, [$d3];
+	cvt_s64_s32	$d4, $s0;
+	shl_u64	$d4, $d4, 3;
+	add_u64	$d2, $d2, $d4;
+	ld_align(8)_f64	$d2, [$d2];
+	cmp_neu_b1_f64	$c0, $d2, $d3;
+	cvt_u32_b1	$s0, $c0;
+	cvt_f64_s32	$d2, $s0;
+	br	@BB0_5;
+
+@BB0_2:
+	// %if.then.if.end_crit_edge
+	mov_b64	$d2, 0;
+
+@BB0_5:
+	// %if.end
+	shl_u64	$d1, $d1, 3;
+	add_u64	$d0, $d0, $d1;
+	mul_f64	$d1, $d2, $d2;
+	st_global_align(8)_f64	$d1, [$d0];
+	ret;
+};

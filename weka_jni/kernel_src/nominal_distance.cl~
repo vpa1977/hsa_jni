@@ -1,0 +1,13 @@
+
+							   
+__kernel void run(__global const double* samples,
+							  double test_value,
+							  const double2 range, 
+							  const int num_instances,
+							  const int offset, 
+							  __global double* result)
+{
+	int id = get_global_id(0);
+	result[ id ] += isnotequal( test_value , samples[offset + id]); 	
+}
+	
