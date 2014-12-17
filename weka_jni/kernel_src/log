@@ -1,4 +1,0 @@
-/home/bsp/hsa_jni/kernels/max_value.cl:21:26: warning: unknown OpenCL extension 'cl_amd_printf' - ignoring
-#pragma OPENCL EXTENSION cl_amd_printf : enable
-                         ^
-1 warning generated.

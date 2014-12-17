@@ -17,17 +17,18 @@
  ) 
  { 
  	local TYPE scratch[256];
+ 	int gy = get_global_id (1);
  	int gx = get_global_id (0); 
  	int gloId = gx; 
  	TYPE accumulator; 
  	if(gloId < length){ 
- 		accumulator = (TYPE) input_iter[gx]; 
+ 		accumulator = (TYPE) input_iter[gx + gy*length]; 
  		gx += get_global_size(0); 
  	} 
  
 	 while (gx < length) 
 	 { 
-	 	TYPE element = input_iter[gx]; 
+	 	TYPE element = input_iter[gx + gy*length]; 
 	 	accumulator = userFunctor(accumulator, element); 
 	 	gx += get_global_size(0); 
 	 } 
@@ -51,7 +52,7 @@
  		return; 
  
  	if (local_index == 0) { 
- 		result[get_group_id(0)] = scratch[0]; 
+ 		result[get_group_id(0) + get_num_groups(0)*gy] = scratch[0]; 
  	} 
  }; 
 
