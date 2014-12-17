@@ -31,6 +31,16 @@ public class WekaHSAContext {
 		return new KnnNativeContext(model, size);
 	}
 	
+	public WekaHSAContext.SGD createNativeSGD()
+	{
+		return new SGD();
+	}
+	
+	public class SGD 
+	{
+		public native void UpdateWeights(InstanceBatch batch, double[] weights);
+	}
+	
 	
 	/** 
 	 * Provides sliding window backed by native implementation 

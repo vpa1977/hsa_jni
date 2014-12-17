@@ -7,6 +7,7 @@
   <xsd:complexType name="Experiments">
   	<xsd:sequence>
   		<xsd:element name="knn" type="FirstKnnExperiment" maxOccurs="unbounded"></xsd:element>
+  		<xsd:element name="sgd" type="SGDExperiment" maxOccurs="unbounded"></xsd:element>
   	</xsd:sequence>
   </xsd:complexType>
 
@@ -17,6 +18,17 @@
       <xsd:element name="test_size" type="xsd:int"/>
       <xsd:element name="train_size" type="xsd:int"/>
       <xsd:element name="generator" type="xsd:string"/>
+    </xsd:all>
+  </xsd:complexType>
+  
+  <xsd:complexType name="SGDExperiment">
+  	<xsd:all>
+      <xsd:element name="window" type="xsd:int"/>
+      <xsd:element name="test_size" type="xsd:int"/>
+      <xsd:element name="train_size" type="xsd:int"/>
+      <xsd:element name="generator" type="xsd:string"/>
+      <xsd:element name="train_batch" type="xsd:int"/>
+      <xsd:element name="test_batch" type="xsd:int"/>
     </xsd:all>
   </xsd:complexType>
 

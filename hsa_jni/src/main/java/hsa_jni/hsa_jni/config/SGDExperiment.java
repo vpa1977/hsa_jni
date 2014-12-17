@@ -15,20 +15,21 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for FirstKnnExperiment complex type.
+ * <p>Java class for SGDExperiment complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="FirstKnnExperiment">
+ * &lt;complexType name="SGDExperiment">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;all>
- *         &lt;element name="k" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="window" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="test_size" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="train_size" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="generator" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="train_batch" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="test_batch" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *       &lt;/all>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -38,12 +39,11 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "FirstKnnExperiment", propOrder = {
+@XmlType(name = "SGDExperiment", propOrder = {
 
 })
-public class FirstKnnExperiment {
+public class SGDExperiment {
 
-    protected int k;
     protected int window;
     @XmlElement(name = "test_size")
     protected int testSize;
@@ -51,22 +51,10 @@ public class FirstKnnExperiment {
     protected int trainSize;
     @XmlElement(required = true)
     protected String generator;
-
-    /**
-     * Gets the value of the k property.
-     * 
-     */
-    public int getK() {
-        return k;
-    }
-
-    /**
-     * Sets the value of the k property.
-     * 
-     */
-    public void setK(int value) {
-        this.k = value;
-    }
+    @XmlElement(name = "train_batch")
+    protected int trainBatch;
+    @XmlElement(name = "test_batch")
+    protected int testBatch;
 
     /**
      * Gets the value of the window property.
@@ -138,6 +126,38 @@ public class FirstKnnExperiment {
      */
     public void setGenerator(String value) {
         this.generator = value;
+    }
+
+    /**
+     * Gets the value of the trainBatch property.
+     * 
+     */
+    public int getTrainBatch() {
+        return trainBatch;
+    }
+
+    /**
+     * Sets the value of the trainBatch property.
+     * 
+     */
+    public void setTrainBatch(int value) {
+        this.trainBatch = value;
+    }
+
+    /**
+     * Gets the value of the testBatch property.
+     * 
+     */
+    public int getTestBatch() {
+        return testBatch;
+    }
+
+    /**
+     * Sets the value of the testBatch property.
+     * 
+     */
+    public void setTestBatch(int value) {
+        this.testBatch = value;
     }
 
 }

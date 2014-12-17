@@ -1,0 +1,10 @@
+<Experiments>
+	<sgd>
+		<window>1024</window>
+		<test_size>10000</test_size>
+		<train_size>100000</train_size>
+		<generator>hsa_jni.hsa_jni.SparseInstanceStreamGenerator</generator>
+		<train_batch>100</train_batch>
+		<test_batch>100</test_batch>
+	</sgd>
+</Experiments>

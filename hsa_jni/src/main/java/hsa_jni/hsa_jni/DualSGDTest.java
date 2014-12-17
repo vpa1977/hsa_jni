@@ -2,9 +2,20 @@ package hsa_jni.hsa_jni;
 
 
 
+import hsa_jni.hsa_jni.config.Experiments;
+import hsa_jni.hsa_jni.config.FirstKnnExperiment;
+import hsa_jni.hsa_jni.config.SGDExperiment;
+
+import java.io.FileInputStream;
+import java.util.List;
+
+import javax.xml.bind.JAXB;
+
 import weka.classifiers.lazy.IBk;
 import weka.core.neighboursearch.LinearNNSearch;
 import moa.classifiers.meta.WEKAClassifier;
+import moa.options.AbstractOptionHandler;
+import moa.options.ClassOption;
 import moa.streams.InstanceStream;
 import moa.streams.generators.RandomTreeGenerator;
 import moa.tasks.EvaluatePeriodicHeldOutTest;
@@ -21,53 +32,77 @@ public class DualSGDTest {
 	 */
 	public static void main(String[] args) throws Throwable {
 		
-		int k = Integer.parseInt(args[0]);
-		int window = Integer.parseInt(args[1]);
 		
-		int test_size  = Integer.parseInt(args[2]);
-		int train_size = Integer.parseInt(args[3]);
-		
-		
-		
-		InstanceStream generator = (InstanceStream)Class.forName(args[4]).newInstance();
-		
-		RandomTreeGenerator rtg = (RandomTreeGenerator) generator;
-		rtg.numNominalsOption.setValue(32);
-		rtg.numNumericsOption.setValue(32);
-		
+		RandomTreeGenerator d;
 		
 		WekaHSAContext context = new WekaHSAContext();
 		
-		KnnGpuClassifier classifier = new KnnGpuClassifier(context,window, k);
+		Experiments experiments = JAXB.unmarshal(new FileInputStream(args[0]),Experiments.class );
 		
-		SGD hsaSGD = new SGD();
+		List<SGDExperiment> list = experiments.getSgd();
 		
-		moa.classifiers.functions.SGD moaSGD = new moa.classifiers.functions.SGD(); 
+		for (SGDExperiment experiment : list )
+		{
+			try {
+				
+				moa.classifiers.functions.SGD moaSGD = new moa.classifiers.functions.SGD();
+				String generatorCLI = experiment.getGenerator();
+				
+				InstanceStream generator = (InstanceStream)ClassOption.cliStringToObject(generatorCLI,InstanceStream.class, null );
+				
+				
+				int window = experiment.getWindow();
+				int train_size = experiment.getTrainSize();
+				int test_size = experiment.getTestSize();
+				int train_batch = experiment.getTestBatch();
+				int test_batch = experiment.getTrainBatch();
+				SGD hsaSGD = new SGD();
+				hsaSGD.trainBatchSizeOption.setValue(train_batch);
+				hsaSGD.testBatchSizeOption.setValue(test_batch);
+				
+				System.out.println("Test : window="+ window);
+				System.out.println("     : test_batch="+ test_batch);
+				System.out.println("     : train_batch="+ train_batch);
+				
+				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size);
+				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
+				
+				
+				
+				
+				EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
+				test.streamOption.setCurrentObject(generator);
+				test.learnerOption.setCurrentObject(hsaSGD);
+				test.testSizeOption.setValue(test_size);
+				test.trainSizeOption.setValue(train_size);
+				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
+				Object ret = test.doTask(new NullMonitor(),null);
+				System.out.println(ret);
+				System.out.println("---------------------------------------------------------------------------");
+				
+				test = new EvaluatePeriodicHeldOutTest();
+				test.learnerOption.setCurrentObject(moaSGD);
+				test.streamOption.setCurrentObject(generator);
+				test.testSizeOption.setValue(test_size);
+				test.trainSizeOption.setValue(train_size);
+				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
+				ret = test.doTask(new NullMonitor(),null);
+				System.out.println(ret);
+				System.out.println("---------------------------------------------------------------------------");
+
+			}
+			catch (Throwable t )
+			{
+				t.printStackTrace();
+			}
+
+		}
 		
-		System.out.println("Test : window="+ window + " k =" + k);
-		System.out.println("	 : test_size="+ test_size + " train_size =" + train_size);
-		System.out.println("Stream: "+generator.getClass());// + " "+ generator.getOptions().getAsCLIString());
 		
-		EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
-		test.streamOption.setCurrentObject(generator);
-		test.learnerOption.setCurrentObject( moaSGD);
-		test.testSizeOption.setValue(test_size);
-		test.trainSizeOption.setValue(train_size);
-		System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-		Object ret = test.doTask(new NullMonitor(),null);
-		System.out.println(ret);
-		System.out.println("---------------------------------------------------------------------------");
+		 
 		
-		test = new EvaluatePeriodicHeldOutTest();
-		test.learnerOption.setCurrentObject(hsaSGD);
-		test.streamOption.setCurrentObject(generator);
-		test.testSizeOption.setValue(test_size);
-		test.trainSizeOption.setValue(train_size);
-		System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-		ret = test.doTask(new NullMonitor(),null);
-		System.out.println(ret);
-		System.out.println("---------------------------------------------------------------------------");
 		
 	}
 
 }
+
