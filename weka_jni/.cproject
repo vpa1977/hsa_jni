@@ -146,12 +146,10 @@
 									<listOptionValue builtIn="false" value="/home/bsp/HSA-Runtime-AMD/lib"/>
 									<listOptionValue builtIn="false" value="/home/bsp/Bolt-Release/lib64"/>
 									<listOptionValue builtIn="false" value="/home/bsp/appsdk2.9/AMDAPPSDK-2.9-1/lib/x86_64"/>
-									<listOptionValue builtIn="false" value="/home/bsp/Okra-Interface-to-HSA-Device/okra/dist/bin"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.2058982736" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="elf"/>
 									<listOptionValue builtIn="false" value="hsa-runtime64"/>
-									<listOptionValue builtIn="false" value="okra_x86_64"/>
 									<listOptionValue builtIn="false" value="OpenCL"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.430911762" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -164,9 +162,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.so.release.319290454.2067077302" name="test_startup.cpp" rcbsApplicability="disable" resourcePath="test_startup.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588.1510152828">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588.1510152828" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1145583588"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="test_startup.cpp|test_files" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

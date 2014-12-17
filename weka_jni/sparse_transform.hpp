@@ -1,5 +1,5 @@
-#ifndef TRANSFORM_HPP_
-#define TRANSFORM_HPP_
+#ifndef SPARSE_TRANSFORM_HPP_
+#define SPARSE_TRANSFORM_HPP_
 
 #include "HSAContext.h"
 #include <vector>
@@ -8,17 +8,17 @@
 #include <string.h>
 
 /**
- * Reduces a double vector in single valur
+ *
  */
-class Transform
+class SparseTransform
 {
 public:
-	Transform(std::shared_ptr<HSAContext> context, const std::string& dump)
+	SparseTransform(std::shared_ptr<HSAContext> context, const std::string& dump)
 	{
 		m_local_kernel = context->createKernel(dump.c_str(), "&__OpenCL_run_kernel");
 		m_local_dispatch = context->createDispatch(m_local_kernel);
 	}
-	virtual ~Transform()
+	virtual ~SparseTransform()
 	{
 		delete m_local_dispatch; m_local_dispatch = NULL;
 	}
@@ -26,7 +26,7 @@ public:
 public:
 
 
-	double transform(double* ptr, size_t size)
+	double transform(double* ptr,int* indices, size_t size)
 	{
 
 		size_t num_wg = 64;

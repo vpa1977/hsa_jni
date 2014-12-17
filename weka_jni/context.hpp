@@ -12,6 +12,7 @@
 #include <jni.h>
 #include "hsa_jni_hsa_jni_WekaHSAContext.h"
 #include "hsa_jni_hsa_jni_WekaHSAContext_KnnNativeContext.h"
+#include "hsa_jni_hsa_jni_WekaHSAContext_SGD.h"
 #include <vector>
 #include <deque>
 #include <iostream>
@@ -39,7 +40,8 @@ struct Algorithms
 				   m_per_attribute_distances(m_pcontext, "/home/bsp/hsa_jni/kernels/numeric_distance.brig",
 						   "/home/bsp/hsa_jni/kernels/nominal_distance.brig"  ),
 				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig"),
-				   m_reduce(m_pcontext, "/home/bsp/hsa_jni/kernels/reduce.brig")
+				   m_reduce(m_pcontext, "/home/bsp/hsa_jni/kernels/reduce.brig",
+						                 "/home/bsp/hsa_jni/kernels/reduce2d.brig")
 {
 }
 	~Algorithms()
