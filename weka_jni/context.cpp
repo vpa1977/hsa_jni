@@ -106,13 +106,28 @@ double dloss(double z)
 */
 }
 
-double product(double* values, int* indices, double* weights, int size, int classIndex)
+#include "product_sparse.h"
+
+hsa_signal_t product(double* values, int* indices, double* weights, int size, int classIndex,double * tmp)
 {
-	double result = 0;
+	return g_algorithms.m_sparse_product.product(classIndex, values, indices, weights, size, tmp);
+
+	/*double result[256];
+
+
+	size_t num_wg = 64;
+	size_t num_compute_units = 6;
+	size_t global_size = num_wg * num_compute_units;
+	size_t workgroup_size = 256;
+	Launch_params_t lparm={.ndim=1, .gdims={global_size}, .ldims={256}};
+	run(classIndex,weights,indices,values,size,&result[0], lparm);
+	return result[0];
+(/
+	/* double result = 0;
 	for (int i = 0 ; i < size ; ++i)
 		if (indices[i] != classIndex)
 			result += values[i] * weights[indices[i]];
-	return (result);
+	return (result);*/
 }
 
 /*
@@ -159,34 +174,47 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 	double *class_values_ptr = (double*) env->GetPrimitiveArrayCritical(class_values, &is_copy);
 	double* weights_ptr = (double*) env->GetPrimitiveArrayCritical(weights, &is_copy);
 
+	static std::vector<double> results;
 	static std::vector<double> wx;
+
+	static std::vector<double*> tmp_values;
+	static std::vector<int*> tmp_indices;
 	wx.resize(size);
+	tmp_values.resize(size);
+	tmp_indices.resize(size);
 
 	for (int i = 0 ;i < size ; ++i)
 	{
 		jintArray instance_indices = (jintArray)env->GetObjectArrayElement(indices, i);
 		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
-
-		int instance_size = env->GetArrayLength(instance_values);
-
 		double* instance_values_ptr = (double*)env->GetPrimitiveArrayCritical(instance_values, &is_copy);
 		int* instance_indices_ptr = (int*)env->GetPrimitiveArrayCritical(instance_indices, &is_copy);
+		tmp_values[i]  = instance_values_ptr;
+		tmp_indices[i] = instance_indices_ptr;
+	}
 
-		wx[i] = product(instance_values_ptr, instance_indices_ptr, weights_ptr, instance_size,classIndex);
 
-		env->ReleasePrimitiveArrayCritical( instance_indices, instance_indices_ptr, 0);
-		env->ReleasePrimitiveArrayCritical( instance_values, instance_values_ptr, 0);
+
+	size_t num_wg = 64;
+	size_t num_compute_units = 6;
+	size_t global_size = num_wg * num_compute_units;
+
+	results.resize( global_size * size);
+
+	for (int i = 0 ;i < size ; ++i)
+	{
+		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
+		int instance_size = env->GetArrayLength(instance_values);
+		wx[i] = product(tmp_values[i], tmp_indices[i], weights_ptr, instance_size,classIndex, &results[i * global_size]);
 	}
 
 
 	for (int i = 0 ;i < size; ++i)
 	{
-		jintArray instance_indices = (jintArray)env->GetObjectArrayElement(indices, i);
 		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
 		int instance_size = env->GetArrayLength(instance_values);
-
-		double* instance_values_ptr = (double*)env->GetPrimitiveArrayCritical(instance_values, &is_copy);
-		int* instance_indices_ptr = (int*)env->GetPrimitiveArrayCritical(instance_indices, &is_copy);
+		int * indices = tmp_indices[i];
+		double* values = tmp_values[i];
 
 		//
 		double y;
@@ -207,20 +235,25 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 			double factor = m_learningRate * y * dloss(z);
 
 			// Update coefficients for attributes
-			for (int i = 0 ;i < instance_size ; ++i)
+			for (int j = 0 ;j < instance_size ; ++j)
 			{
-				if (instance_indices_ptr[i] == classIndex)
+				if (indices[j] == classIndex)
 					continue;
-				weights_ptr[instance_indices_ptr[i]] += factor * instance_values_ptr[i];
+				weights_ptr[indices[j]] += factor * values[j];
 			}
 			// update the bias
 			m_bias += factor;
 		}
 		m_t++;
+	}
 
-		env->ReleasePrimitiveArrayCritical( instance_indices, instance_indices_ptr, 0);
-		env->ReleasePrimitiveArrayCritical( instance_values, instance_values_ptr, 0);
 
+	for (int i = 0 ;i < size ; ++i)
+	{
+		jintArray instance_indices = (jintArray)env->GetObjectArrayElement(indices, i);
+		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
+		env->ReleasePrimitiveArrayCritical( instance_indices,tmp_indices[i], 0);
+		env->ReleasePrimitiveArrayCritical( instance_values, tmp_values[i], 0);
 	}
 
 

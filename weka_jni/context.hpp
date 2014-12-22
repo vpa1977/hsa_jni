@@ -25,6 +25,7 @@
 #include "distance.hpp"
 #include "dump.hpp"
 #include "reduce.hpp"
+#include "sparse_product.hpp"
 
 
 struct Algorithms
@@ -41,7 +42,9 @@ struct Algorithms
 						   "/home/bsp/hsa_jni/kernels/nominal_distance.brig"  ),
 				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig"),
 				   m_reduce(m_pcontext, "/home/bsp/hsa_jni/kernels/reduce.brig",
-						                 "/home/bsp/hsa_jni/kernels/reduce2d.brig")
+						                 "/home/bsp/hsa_jni/kernels/reduce2d.brig"),
+				   m_sparse_product(m_pcontext,"/home/bsp/hsa_jni/kernels/product_sparse.brig" )
+
 {
 }
 	~Algorithms()
@@ -56,6 +59,7 @@ struct Algorithms
 	PerAttributeDistance m_per_attribute_distances;
 	Dump m_dump;
 	Reduce m_reduce;
+	SparseProduct m_sparse_product;
 
 };
 

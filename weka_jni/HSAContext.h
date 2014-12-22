@@ -46,6 +46,20 @@
 #include <hsa.h>
 
 
+#ifdef __cplusplus
+#define _CPPSTRING_ "C"
+#endif
+#ifndef __cplusplus
+#define _CPPSTRING_
+#endif
+#ifndef __SNACK_DEFS
+typedef struct transfer_t Transfer_t;
+struct transfer_t { int nargs ; size_t* rsrvd1; size_t* rsrvd2 ; size_t* rsrvd3; } ;
+typedef struct lparm_t Launch_params_t;
+struct lparm_t { int ndim; size_t gdims[3]; size_t ldims[3]; Transfer_t transfer  ;} ;
+#define __SNACK_DEFS
+#endif
+
 #define FIX_ARGS_STABLE(X)\
 	X->pushPointerArg(0);\
 	X->pushPointerArg(0);\
@@ -58,6 +72,7 @@
 // Abstract interface to an HSA Implementation
 class HSAContext {
 public:
+
 	/** hardware-specific. hardcoded for simplicity */
 	virtual size_t GetComputeUnits() =0;
 	virtual size_t GetMaxWorkgroup()=0;
@@ -86,10 +101,10 @@ public:
 		virtual hsa_status_t dispatchKernelWaitComplete() = 0;
 
 		// dispatch a kernel asynchronously
-		virtual hsa_status_t dispatchKernel() = 0;
+		virtual hsa_status_t dispatchKernel(hsa_signal_t& ) = 0;
 
 		// wait for the kernel to finish execution
-		virtual hsa_status_t waitComplete() = 0;
+		virtual hsa_status_t waitComplete(hsa_signal_t& ) = 0;
 
 		// dispatch a kernel asynchronously and get a future object
 		virtual std::future<void> dispatchKernelAndGetFuture() = 0;
@@ -116,5 +131,7 @@ public:
 private:
 	static HSAContext* m_pContext;
 };
+
+
 
 #endif // HSACONTEXT_H

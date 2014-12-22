@@ -16,7 +16,10 @@ public class SparseInstanceStreamGenerator extends AbstractOptionHandler impleme
 	
 	public SparseInstanceStreamGenerator()
 	{
-		m_generator = new RandomTreeGenerator();
+		RandomTreeGenerator gen = new RandomTreeGenerator();
+		gen.numNumericsOption.setValue(512);
+		m_generator = gen;
+	
 	}
 	
 	public SparseInstanceStreamGenerator(InstanceStream is)
