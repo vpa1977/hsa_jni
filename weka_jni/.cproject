@@ -70,7 +70,7 @@
 									<listOptionValue builtIn="false" value="OpenCL"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.1270467188" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fPIC" valueType="string"/>
-								<option id="gnu.cpp.link.option.userobjs.850251482" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
+								<option id="gnu.cpp.link.option.userobjs.850251482" name="Other objects" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/product_sparse.o}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1805055966" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

@@ -60,10 +60,10 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024KnnNativeConte
 	double* distances_ptr = (double*) env->GetPrimitiveArrayCritical(distances, &is_copy);
 	int* indexes_ptr = (int*) env->GetPrimitiveArrayCritical(indexes, &is_copy);
 	{
-		g_algorithms.m_per_attribute_distances.distance(instance_ptr,window_ptr, ranges_ptr,
-		  numerics_size, instance_size, window_size,current_size, distances_ptr );
-		//g_algorithms.m_square_distance.calculate(instance_ptr, window_ptr, window_size,
-			///	ranges_ptr, instance_size, numerics_size, distances_ptr);
+		//g_algorithms.m_per_attribute_distances.distance(instance_ptr,window_ptr, ranges_ptr,
+		//  numerics_size, instance_size, window_size,current_size, distances_ptr );
+		g_algorithms.m_square_distance.calculate(instance_ptr, window_ptr, window_size,
+				ranges_ptr, instance_size, numerics_size, distances_ptr);
 		g_algorithms.m_merge_sort.sort(distances_ptr, indexes_ptr, current_size);
 	}
 

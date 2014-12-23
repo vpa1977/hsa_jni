@@ -9,6 +9,7 @@
 #define MERGE_SORT_HPP_
 
 #include "HSAContext.h"
+#include "HSAContextImpl.hpp"
 #include <vector>
 #include <math.h>
 #include <algorithm>
@@ -17,14 +18,50 @@
 class MergeSort
 {
 public:
+
+	struct LocalArgs
+		{
+			long global_offset_0;
+			long global_offset_1;
+			long global_offset_2;
+			long* printf_buffer;
+			long* vqueue_pointer;
+			long* aqlwrap_pointer;
+			int vecSize;
+			double * data;
+			int * offsets;
+		} __attribute__ ((aligned (16))) ;
+
+		LocalArgs m_local_args;
+
+		struct GlobalArgs
+		{
+			long global_offset_0;
+			long global_offset_1;
+			long global_offset_2;
+			long* printf_buffer;
+			long* vqueue_pointer;
+			long* aqlwrap_pointer;
+			int vecSize;
+			int srcLogicalBlockSize;
+			double * data;
+			double * data_output;
+			int * offsets;
+			int * offsets_output;
+		} __attribute__ ((aligned (16)));
+
+		GlobalArgs m_global_args;
 	MergeSort(std::shared_ptr<HSAContext> context, const std::string& local_merge_brig, const std::string& global_merge_brig)
 	{
 		m_local_kernel = context->createKernel(local_merge_brig.c_str(), "&__OpenCL_run_kernel");
-		m_local_dispatch = context->createDispatch(m_local_kernel);
+		m_local_dispatch = new TemplateDispatch<LocalArgs>(m_local_kernel);
 
 		m_global_kernel = context->createKernel(global_merge_brig.c_str(), "&__OpenCL_run_kernel");
-		m_global_dispatch = context->createDispatch(m_global_kernel);
+		m_global_dispatch = new TemplateDispatch<GlobalArgs>(m_global_kernel);
 		m_context = context;
+
+		memset(&m_local_args ,0, sizeof(m_local_args));
+		memset(&m_global_args,0, sizeof(m_global_args));
 	}
 	virtual ~MergeSort()
 	{
@@ -79,19 +116,18 @@ public:
 private:
 
 
+
+
+
 	void do_local_sort(int* offsets, double* data, int vecSize, size_t global_size, size_t local_size)
 	{
-		m_local_dispatch->clearArgs();
-		FIX_ARGS_STABLE(m_local_dispatch);
-
-		m_local_dispatch->pushIntArg(vecSize);
-		m_local_dispatch->pushPointerArg(data);
-		m_local_dispatch->pushPointerArg(offsets);
-
-		size_t global_dims[3] = {global_size,1,1};
-		size_t local_dims[3] = {local_size,1,1};
-		m_local_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
-		m_local_dispatch->dispatchKernelWaitComplete();
+		m_local_args.vecSize = vecSize;
+		m_local_args.data = data;
+		m_local_args.offsets = offsets;
+		Launch_params_t lp1 {.ndim=1, .gdims={global_size}, .ldims={local_size}};
+		hsa_signal_t signal;
+		m_local_dispatch->dispatchKernel(m_local_args, signal, lp1);
+		m_local_dispatch->waitComplete(signal);
 	}
 
 	void do_global_merge(int* offsets, double* data, int vecSize, size_t global_size, size_t localRange)
@@ -118,28 +154,28 @@ private:
 
 		for (int pass = 1; pass <= numMerges; ++pass) {
 			int srcLogicalBlockSize = localRange << (pass - 1);
-			m_global_dispatch->clearArgs();
-			FIX_ARGS_STABLE(m_global_dispatch);
 
-			m_global_dispatch->pushIntArg(vecSize);
-			m_global_dispatch->pushIntArg(srcLogicalBlockSize);
+			m_global_args.vecSize = vecSize;
+			m_global_args.srcLogicalBlockSize = srcLogicalBlockSize;
 
 			if ((pass & 0x1) > 0) {
-				m_global_dispatch->pushPointerArg(data);
-				m_global_dispatch->pushPointerArg(&tmp[0]);
-				m_global_dispatch->pushPointerArg(offsets);
-				m_global_dispatch->pushPointerArg(&offsets2[0]);
+				m_global_args.data= data;
+				m_global_args.data_output = &tmp[0];
+				m_global_args.offsets = offsets;
+				m_global_args.offsets_output = &offsets2[0];
 
 			} else {
-				m_global_dispatch->pushPointerArg(&tmp[0]);
-				m_global_dispatch->pushPointerArg(data);
-				m_global_dispatch->pushPointerArg(&offsets2[0]);
-				m_global_dispatch->pushPointerArg(offsets);
+
+				m_global_args.data= &tmp[0];
+				m_global_args.data_output = data;
+				m_global_args.offsets = &offsets2[0];
+				m_global_args.offsets_output = offsets;
 			}
-			size_t global_dims[3] = {global_size,1,1};
-			size_t local_dims[3] = {localRange,1,1};
-			m_global_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
-			m_global_dispatch->dispatchKernelWaitComplete();
+
+			Launch_params_t lp1 {.ndim=1, .gdims={global_size}, .ldims={localRange}};
+			hsa_signal_t signal;
+			m_local_dispatch->dispatchKernel(m_local_args, signal, lp1);
+			m_local_dispatch->waitComplete(signal);
 		}
 
 		if ((numMerges & 1) > 0)
@@ -153,17 +189,13 @@ private:
 
 	void do_local_sort(std::vector<int>& offsets, std::vector<double>& data, int vecSize, size_t global_size, size_t local_size)
 	{
-		m_local_dispatch->clearArgs();
-		FIX_ARGS_STABLE(m_local_dispatch);
-
-		m_local_dispatch->pushIntArg(vecSize);
-		m_local_dispatch->pushPointerArg(&data[0]);
-		m_local_dispatch->pushPointerArg(&offsets[0]);
-
-		size_t global_dims[3] = {global_size,1,1};
-		size_t local_dims[3] = {local_size,1,1};
-		m_local_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
-		m_local_dispatch->dispatchKernelWaitComplete();
+		m_local_args.vecSize = vecSize;
+		m_local_args.data = &data[0];
+		m_local_args.offsets = &offsets[0];
+		Launch_params_t lp1 {.ndim=1, .gdims={global_size}, .ldims={local_size}};
+		hsa_signal_t signal;
+		m_local_dispatch->dispatchKernel(m_local_args, signal, lp1);
+		m_local_dispatch->waitComplete(signal);
 	}
 
 	void do_global_merge(std::vector<int>& offsets, std::vector<double>& data, int vecSize, size_t global_size, size_t localRange)
@@ -190,28 +222,27 @@ private:
 
 		for (int pass = 1; pass <= numMerges; ++pass) {
 			int srcLogicalBlockSize = localRange << (pass - 1);
-			m_global_dispatch->clearArgs();
-			FIX_ARGS_STABLE(m_global_dispatch);
-
-			m_global_dispatch->pushIntArg(vecSize);
-			m_global_dispatch->pushIntArg(srcLogicalBlockSize);
+			m_global_args.vecSize = vecSize;
+			m_global_args.srcLogicalBlockSize = srcLogicalBlockSize;
 
 			if ((pass & 0x1) > 0) {
-				m_global_dispatch->pushPointerArg(&data[0]);
-				m_global_dispatch->pushPointerArg(&tmp[0]);
-				m_global_dispatch->pushPointerArg(&offsets[0]);
-				m_global_dispatch->pushPointerArg(&offsets2[0]);
+				m_global_args.data= &data[0];
+				m_global_args.data_output = &tmp[0];
+				m_global_args.offsets = &offsets[0];
+				m_global_args.offsets_output = &offsets2[0];
 
 			} else {
-				m_global_dispatch->pushPointerArg(&tmp[0]);
-				m_global_dispatch->pushPointerArg(&data[0]);
-				m_global_dispatch->pushPointerArg(&offsets2[0]);
-				m_global_dispatch->pushPointerArg(&offsets[0]);
+
+				m_global_args.data= &tmp[0];
+				m_global_args.data_output = &data[0];
+				m_global_args.offsets = &offsets2[0];
+				m_global_args.offsets_output = &offsets[0];
 			}
-			size_t global_dims[3] = {global_size,1,1};
-			size_t local_dims[3] = {localRange,1,1};
-			m_global_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
-			m_global_dispatch->dispatchKernelWaitComplete();
+
+			Launch_params_t lp1 {.ndim=1, .gdims={global_size}, .ldims={localRange}};
+			hsa_signal_t signal;
+			m_local_dispatch->dispatchKernel(m_local_args, signal, lp1);
+			m_local_dispatch->waitComplete(signal);
 		}
 
 		if ((numMerges & 1) > 0)
@@ -226,8 +257,8 @@ private:
 	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Kernel* m_local_kernel;
 	HSAContext::Kernel* m_global_kernel;
-	HSAContext::Dispatch* m_local_dispatch;
-	HSAContext::Dispatch* m_global_dispatch;
+	TemplateDispatch<LocalArgs>* m_local_dispatch;
+	TemplateDispatch<GlobalArgs>* m_global_dispatch;
 };
 
 

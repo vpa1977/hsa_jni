@@ -1,0 +1,46 @@
+<Experiments>
+
+	<knn>
+		<k>512</k>
+		<window>1024</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+	<knn>
+		<k>512</k>
+		<window>2048</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+	<knn>
+		<k>512</k>
+		<window>4096</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+	<knn>
+		<k>512</k>
+		<window>8192</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+	<knn>
+		<k>512</k>
+		<window>16384</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+	<knn>
+		<k>512</k>
+		<window>32768</window>
+		<test_size>1000</test_size>
+		<train_size>100000</train_size>
+		<generator>moa.streams.generators.RandomTreeGenerator -o 32 -u 32</generator>
+	</knn>
+
+</Experiments>

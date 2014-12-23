@@ -12,16 +12,32 @@
 #include <vector>
 #include <math.h>
 #include <algorithm>
-
+#include "HSAContextImpl.hpp"
 
 class MinMaxValue
 {
 public:
+	struct MinMaxValueArgs {
+		long global_offset_0;
+		long global_offset_1;
+		long global_offset_2;
+		long* printf_buffer;
+		long* vqueue_pointer;
+		long* aqlwrap_pointer;
+		double* p_values;
+		int size;
+		int* p_min_list;
+		int* p_max_list;
+	} __attribute__ ((aligned (16))) ;
+
+	MinMaxValueArgs m_args;
+
 	MinMaxValue(std::shared_ptr<HSAContext> context, const std::string& brig_module)
 	{
 		m_kernel = context->createKernel(brig_module.c_str(), "&__OpenCL_run_kernel");
-		m_dispatch = context->createDispatch(m_kernel);
+		m_dispatch = new TemplateDispatch<MinMaxValueArgs>(m_kernel);
 		m_context = context;
+		memset(&m_args, 0, sizeof(m_args));
 	}
 	virtual ~MinMaxValue()
 	{
@@ -41,17 +57,14 @@ public:
 		m_result_min.resize( global_size);
 		m_result_max.resize( global_size);
 
-		m_dispatch->clearArgs();
-		FIX_ARGS_STABLE(m_dispatch);
-
-		m_dispatch->pushPointerArg((void*)ptr);
-		m_dispatch->pushIntArg((int)size );
-		m_dispatch->pushPointerArg((void*)&m_result_min[0]);
-		m_dispatch->pushPointerArg((void*)&m_result_max[0]);
-		size_t global_dims[3] = { std::min(roundUp(size, workgroup_size), global_size*workgroup_size),1,1};
-		size_t local_dims[3] = {workgroup_size,1,1};
-		m_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
-		m_dispatch->dispatchKernelWaitComplete();
+		m_args.p_values = ptr;
+		m_args.size = size;
+		m_args.p_min_list = &m_result_min[0];
+		m_args.p_max_list = &m_result_max[0];
+		hsa_signal_t signal;
+		Launch_params_t lp {.ndim=1, .gdims={std::min(roundUp(size, workgroup_size), global_size*workgroup_size)}, .ldims={workgroup_size}};
+		m_dispatch->dispatchKernel(m_args, signal, lp);
+		m_dispatch->waitComplete(signal);
 		if (size < workgroup_size)
 		{
 			min = ptr[ m_result_min[0]];
@@ -104,7 +117,7 @@ protected:
 private:
 	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Kernel* m_kernel;
-	HSAContext::Dispatch* m_dispatch;
+	TemplateDispatch<MinMaxValueArgs>* m_dispatch;
 
 
 };

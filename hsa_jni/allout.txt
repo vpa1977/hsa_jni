@@ -1,0 +1,12 @@
+/home/bsp/git_repository/hsa_jni/target/classes:/home/bsp/.m2/repository/junit/junit/4.4/junit-4.4.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/weka/weka-dev/3.7.10/weka-dev-3.7.10.jar:/home/bsp/.m2/repository/net/sf/squirrel-sql/thirdparty-non-maven/java-cup/0.11a/java-cup-0.11a.jar:/home/bsp/.m2/repository/org/pentaho/pentaho-commons/pentaho-package-manager/1.0.8/pentaho-package-manager-1.0.8.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl/1.0.0-RC3/javacl-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/javacl-core/1.0.0-RC3/javacl-core-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/opencl4java/1.0.0-RC3/opencl4java-1.0.0-RC3.jar:/home/bsp/.m2/repository/com/nativelibs4java/bridj/0.6.2/bridj-0.6.2.jar:/home/bsp/.m2/repository/com/google/android/tools/dx/1.7/dx-1.7.jar:/home/bsp/.m2/repository/com/nativelibs4java/nativelibs4java-utils/1.5/nativelibs4java-utils-1.5.jar:/home/bsp/.m2/repository/nz/ac/waikato/cms/moa/moa/2013.11/moa-2013.11.jar:/home/bsp/.m2/repository/com/googlecode/sizeofag/sizeofag/1.0.0/sizeofag-1.0.0.jar
+Test : window=1024 k =16
+	 : test_size=1000 train_size =100000
+Stream: generators.RandomTreeGenerator -o 32 -u 32 -v 10
+------Classifier:hsa_jni.hsa_jni.KnnGpuClassifier
+Can not access instrumentation environment.
+Please check if jar file containing SizeOfAgent class is 
+specified in the java's "-javaagent" command line argument.
+evaluation instances,total train time,total train speed,last train time,last train speed,test time,test speed,classified instances,classifications correct (percent),Kappa Statistic (percent),Kappa Temporal Statistic (percent),model training instances,model serialized size (bytes)
+100000.0,1.418274288,70508.22315972211,1.418274288,70508.22315972211,1.921735802,520.3628922140464,1000.0,59.5,11.680041870202361,10.398230088495561,100000.0,0.0
+---------------------------------------------------------------------------
+------Classifier:meta.WEKAClassifier -l (weka.classifiers.lazy.IBk -K 16 -W 1024 -A "weka.core.neighboursearch.LinearNNSearch -A \"weka.core.EuclideanDistance -R first-last\"")
