@@ -100,17 +100,20 @@ private:
 
 };
 
+/**
+ * 1 thread per dot product
+ */
 class SquareDistance
 {
 public:
 	struct GlobalArgs
 	{
-	/*	long global_offset_0;
+		long global_offset_0;
 		long global_offset_1;
 		long global_offset_2;
 		long* printf_buffer;
 		long* vqueue_pointer;
-		long* aqlwrap_pointer;*/
+		long* aqlwrap_pointer;
 		double* input;
 		double* samples;
 		double* ranges;
@@ -170,6 +173,80 @@ private:
 		HSAContext::Kernel* m_kernel;
 };
 
+/**
+ * use p-threads with pre-loading
+ */
+class SquareDistance2
+{
+public:
+	struct GlobalArgs
+	{
+		long global_offset_0;
+		long global_offset_1;
+		long global_offset_2;
+		long* printf_buffer;
+		long* vqueue_pointer;
+		long* aqlwrap_pointer;
+		double* input;
+		double* samples;
+		double* ranges;
+		double* result;
+		int element_count;
+		int numerics_size;
+
+	} __attribute__ ((aligned (16)));
+
+	GlobalArgs m_global_args;
+
+		SquareDistance2(std::shared_ptr<HSAContext> context, const std::string& brig_module)
+		{
+			m_kernel = context->createKernel(brig_module.c_str(), "&__OpenCL_square_distance_kernel");
+			m_dispatch = new TemplateDispatch<GlobalArgs>(m_kernel);//context->createDispatch(m_kernel);
+			m_context = context;
+			memset(&m_global_args, 0, sizeof(m_global_args));
+		}
+		virtual ~SquareDistance2()
+		{
+			delete m_dispatch; m_dispatch = NULL;
+			delete m_kernel; m_kernel = NULL;
+		}
+
+		void calculate(double* input, double * samples, size_t samples_size, double* ranges, int element_count,
+						int numerics_size, double* result)
+		{
+			//m_dispatch->clearArgs();
+			//FIX_ARGS_STABLE(m_dispatch);
+			//size_t workgroup_size = m_context->GetMaxWorkgroup();
+			m_global_args.input = input;
+			m_global_args.samples = samples;
+			m_global_args.ranges = ranges;
+			m_global_args.result = result;
+			m_global_args.element_count = element_count;
+			m_global_args.numerics_size = numerics_size;
+
+			/*m_dispatch->pushPointerArg((void*)input);
+			m_dispatch->pushPointerArg((void*)samples);
+			m_dispatch->pushPointerArg((void*)ranges);
+			m_dispatch->pushPointerArg((void*)result);
+			m_dispatch->pushIntArg(element_count);
+			m_dispatch->pushIntArg(numerics_size);
+			*/
+	//		size_t global_dims[3] = {samples_size,1,1};
+	//		size_t local_dims[3] = {workgroup_size,1,1};
+
+			hsa_signal_t signal;
+			Launch_params_t lp1 {.ndim=2, .gdims={samples_size,std::max(1,element_count/64) }, .ldims={256,64}};
+			//Launch_params_t lp1 {.ndim=2, .gdims={element_count/16,samples_size }, .ldims={16,256}};
+			m_dispatch->dispatchKernel(m_global_args, signal, lp1);
+			m_dispatch->waitComplete(signal);
+			//m_dispatch->setLaunchAttributes(1, global_dims,  local_dims);
+			//m_dispatch->dispatchKernelWaitComplete();
+		}
+private:
+		std::shared_ptr<HSAContext> m_context;
+		TemplateDispatch<GlobalArgs>* m_dispatch;
+		HSAContext::Kernel* m_kernel;
+};
 
 
 

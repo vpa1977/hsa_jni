@@ -1,5 +1,5 @@
-#ifndef SPARSE_PRODUCT_HPP_
-#define SPARSE_PRODUCT_HPP_
+#ifndef SPARSE_PRODUCT_2D_HPP_
+#define SPARSE_PRODUCT_2D_HPP_
 
 
 #include "HSAContextImpl.hpp"
@@ -13,36 +13,38 @@
 /**
  *
  */
-class SparseProduct
+class SparseProduct2D
 {
 public:
 
-	struct SparseProductArgs
+	struct SparseProductArgs2D
 	{
+
 		long global_offset_0;
 		long global_offset_1;
 		long global_offset_2;
 		long* printf_buffer;
 		long* vqueue_pointer;
 		long* aqlwrap_pointer;
-		int classIndex;
-		double* weights;
-		int* weight_indices;
-		double* values;
-		int length;
 		double* result;
+	    int classIndex;
+		double* weights;
+		void**  weights_indices2d;
+		void** input_iter2d;
+		int* length2d;
+
 	} __attribute__ ((aligned (16))) ;
 
-	SparseProductArgs m_args;
+	SparseProductArgs2D m_args;
 
-	SparseProduct(std::shared_ptr<HSAContext> context, const std::string& dump)
+	SparseProduct2D(std::shared_ptr<HSAContext> context, const std::string& dump)
 	{
 		m_local_kernel = context->createKernel(dump.c_str(), "&__OpenCL_run_kernel");
-		m_p_template = new TemplateDispatch<SparseProductArgs>(m_local_kernel);
-
+		m_p_template = new TemplateDispatch<SparseProductArgs2D>(m_local_kernel);
+		memset(&m_args, 0, sizeof(m_args));
 	//	m_local_dispatch = context->createDispatch(m_local_kernel);
 	}
-	virtual ~SparseProduct()
+	virtual ~SparseProduct2D()
 	{
 		//delete m_local_dispatch;
 		//m_local_dispatch = NULL;
@@ -53,28 +55,34 @@ public:
 public:
 
 
-	double product(int classIndex, double *values, int * indices, double* weights, size_t size, double *tmp)
+	void product(size_t tuple_count, int classIndex, double **values, int ** indices, double* weights, int* size2d, double* tmp)
 	{
 		hsa_signal_t signal;
-		size_t num_wg = 64;
+		size_t num_wg = 1;
 		size_t num_compute_units = 6;
-		size_t global_size = num_wg * num_compute_units;
-		size_t workgroup_size = 256;
 
-		static Launch_params_t lp {.ndim=1, .gdims={global_size}, .ldims={256}};
+		size_t workgroup_size = 256;
+		size_t global_size = num_wg * num_compute_units;
+
+		Launch_params_t lp {.ndim=2, .gdims={global_size*workgroup_size, tuple_count}, /*.ldims={workgroup_size, 1}*/};
 		m_args.classIndex = classIndex;
-		m_args.values = values;
-		m_args.weight_indices = indices;
+		m_args.input_iter2d = (void**)values;
+		m_args.weights_indices2d = (void**)indices;
 		m_args.weights = weights;
-		m_args.length = size;
+		m_args.length2d = size2d;
 		m_args.result = tmp;
 		m_p_template->dispatchKernel(m_args, signal, lp);
 		m_p_template->waitComplete(signal);
-		if (size < workgroup_size)
+
+		for (int i = 0 ;i < tuple_count ; ++i)
 		{
-			return  tmp[0];
+			if ((size_t)size2d[i] < workgroup_size)
+			{
+				tmp[i] =  tmp[global_size * i];
+			}
+			else
+				tmp[i] =  reduceTail(&tmp[global_size*i],size2d[i]);
 		}
-		return reduceTail(tmp,size);
 	}
 
 	/*
@@ -130,11 +138,10 @@ protected:
 	}
 
 private:
-	TemplateDispatch<SparseProductArgs>* m_p_template;
+	TemplateDispatch<SparseProductArgs2D>* m_p_template;
 	std::vector<double> m_result;
 	std::shared_ptr<HSAContext> m_context;
 	HSAContext::Kernel* m_local_kernel;
-	HSAContext::Dispatch* m_local_dispatch;
 };
 
 

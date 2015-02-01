@@ -158,6 +158,17 @@ hsa_status_t find_symbol_offset(hsa_ext_brig_module_t* brig_module,
 }
 
 
+hsa_status_t get_shared(hsa_region_t region, void* data) {
+	hsa_region_flag_t flags;
+	hsa_region_get_info(region, HSA_REGION_INFO_SEGMENT, &flags);
+	if (flags & HSA_SEGMENT_GROUP)
+	{
+		 hsa_region_t * ret = (hsa_region_t *) data;
+		 *ret = region;
+		 return HSA_STATUS_INFO_BREAK;
+	}
+	return HSA_STATUS_SUCCESS;
+}
 
 hsa_status_t get_kernarg(hsa_region_t region, void* data) {
   hsa_region_flag_t flags;
@@ -193,12 +204,15 @@ HSAContextKaveriImpl::KernelImpl::KernelImpl(hsa_ext_program_handle_t program,hs
 	 hsaProgram = program;
     context = _context;
     hsaCodeDescriptor =  _hsaCodeDescriptor;
+    m_run_arg_buffer = 0;
  }
 
 
 HSAContextKaveriImpl::KernelImpl::~KernelImpl()
 {
 	hsa_status_t status;
+	if (m_run_arg_buffer != 0)
+		hsa_memory_free(m_run_arg_buffer);
 	if (hsaProgram.handle != 0) {
 	  status = hsa_ext_program_destroy(hsaProgram);
 	  hsaProgram.handle = 0;

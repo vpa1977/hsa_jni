@@ -68,7 +68,7 @@ protected:
 		double result = 0;
 		size_t num_wg = 64;
 		size_t workgroup_size = 256;
-		size_t ceilNumWg = (size_t)ceil(size/workgroup_size);
+		size_t ceilNumWg = (size_t)ceil(((double)size)/workgroup_size);
 		int numTailReduce = std::min( ceilNumWg, num_wg );
 		for (int i = 0; i < numTailReduce ; ++i)
 			result += m_result[i];

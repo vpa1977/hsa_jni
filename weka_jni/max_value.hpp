@@ -51,8 +51,9 @@ public:
 
 		size_t num_wg = 64;
 		size_t num_compute_units = 6;
-		size_t global_size = num_wg * num_compute_units;
 		size_t workgroup_size = 256;
+
+		size_t global_size = num_wg * num_compute_units;
 
 		m_result_min.resize( global_size);
 		m_result_max.resize( global_size);
@@ -87,7 +88,7 @@ protected:
 		size_t num_wg = 64;
 		size_t workgroup_size = 256;
 
-		size_t ceilNumWg = (size_t)ceil(size/workgroup_size);
+		size_t ceilNumWg = (size_t)ceil(((double)size)/workgroup_size);
 		int numTailReduce = std::min( ceilNumWg, num_wg );
 		int min_idx =  m_result_min[0];
 		min =  in[ min_idx ];
@@ -190,7 +191,7 @@ protected:
 		size_t num_wg = 64;
 		size_t workgroup_size = 256;
 
-		size_t ceilNumWg = (size_t)ceil(size/workgroup_size);
+		size_t ceilNumWg = (size_t)ceil(((double)size)/workgroup_size);
 		int numTailReduce = std::min( ceilNumWg, num_wg );
 		int minele_indx =  m_result[0];
 		float minele =  in[ minele_indx ];
@@ -226,7 +227,7 @@ private:
 
 		size_t workgroup_size = 256;
 
-		size_t ceilNumWg = (size_t)ceil(size/workgroup_size);
+		size_t ceilNumWg = (size_t)ceil(((double)size)/workgroup_size);
 		int numTailReduce = std::min( ceilNumWg, num_wg );
 		int minele_indx =  m_result[0];
 		float minele =  in[ minele_indx ];

@@ -108,7 +108,7 @@ double dloss(double z)
 
 #include "product_sparse.h"
 
-hsa_signal_t product(double* values, int* indices, double* weights, int size, int classIndex,double * tmp)
+double product(double* values, int* indices, double* weights, int size, int classIndex,double * tmp)
 {
 	return g_algorithms.m_sparse_product.product(classIndex, values, indices, weights, size, tmp);
 
@@ -174,12 +174,15 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 	double *class_values_ptr = (double*) env->GetPrimitiveArrayCritical(class_values, &is_copy);
 	double* weights_ptr = (double*) env->GetPrimitiveArrayCritical(weights, &is_copy);
 
-	static std::vector<double> results;
+
 	static std::vector<double> wx;
 
+	static std::vector<int> tmp_sizes;
 	static std::vector<double*> tmp_values;
 	static std::vector<int*> tmp_indices;
-	wx.resize(size);
+
+
+	tmp_sizes.resize(size);
 	tmp_values.resize(size);
 	tmp_indices.resize(size);
 
@@ -191,6 +194,7 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 		int* instance_indices_ptr = (int*)env->GetPrimitiveArrayCritical(instance_indices, &is_copy);
 		tmp_values[i]  = instance_values_ptr;
 		tmp_indices[i] = instance_indices_ptr;
+		tmp_sizes[i] = env->GetArrayLength(instance_values);
 	}
 
 
@@ -199,14 +203,11 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 	size_t num_compute_units = 6;
 	size_t global_size = num_wg * num_compute_units;
 
-	results.resize( global_size * size);
+	wx.resize( global_size * size);
 
-	for (int i = 0 ;i < size ; ++i)
-	{
-		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
-		int instance_size = env->GetArrayLength(instance_values);
-		wx[i] = product(tmp_values[i], tmp_indices[i], weights_ptr, instance_size,classIndex, &results[i * global_size]);
-	}
+	g_algorithms.m_sparse_product_2d.product(size, classIndex,&tmp_values[0], &tmp_indices[0],weights_ptr, &tmp_sizes[0], &wx[0] );
+
+
 
 
 	for (int i = 0 ;i < size; ++i)
@@ -265,6 +266,15 @@ JNIEXPORT void JNICALL Java_hsa_1jni_hsa_1jni_WekaHSAContext_00024SGD_UpdateWeig
 
 	env->ReleasePrimitiveArrayCritical(class_values, class_values_ptr, 0);
 	env->ReleasePrimitiveArrayCritical( weights, weights_ptr, 0);
+	/* for (int i = 0 ;i < size ; ++i)
+	{
+		jdoubleArray  instance_values = (jdoubleArray)env->GetObjectArrayElement(values, i);
+		int instance_size = env->GetArrayLength(instance_values);
+		double product_val = product(tmp_values[i], tmp_indices[i], weights_ptr, instance_size,classIndex, &results[i * global_size]);
+		if (wx[i] != product_val)
+			printf("break here");
+	}*/
+
 }
 
 

@@ -26,7 +26,8 @@
 #include "dump.hpp"
 #include "reduce.hpp"
 #include "sparse_product.hpp"
-
+#include "sparse_product2d.hpp"
+#include "vector_sum.hpp"
 
 struct Algorithms
 {
@@ -38,12 +39,17 @@ struct Algorithms
 						   "/home/bsp/hsa_jni/kernels/local_merge.brig",
 						   "/home/bsp/hsa_jni/kernels/global_merge.brig"),
 			       m_square_distance(m_pcontext, "/home/bsp/hsa_jni/kernels/distance.brig"),
+				   m_square_distance2(m_pcontext, "/home/bsp/hsa_jni/kernels/distance2.brig"),
 				   m_per_attribute_distances(m_pcontext, "/home/bsp/hsa_jni/kernels/numeric_distance.brig",
 						   "/home/bsp/hsa_jni/kernels/nominal_distance.brig"  ),
 				   m_dump(m_pcontext, "/home/bsp/hsa_jni/kernels/dump.brig"),
 				   m_reduce(m_pcontext, "/home/bsp/hsa_jni/kernels/reduce.brig",
 						                 "/home/bsp/hsa_jni/kernels/reduce2d.brig"),
-				   m_sparse_product(m_pcontext,"/home/bsp/hsa_jni/kernels/product_sparse.brig" )
+				   m_sparse_product(m_pcontext,"/home/bsp/hsa_jni/kernels/product_sparse.brig" ),
+				   m_sparse_product_2d(m_pcontext,"/home/bsp/hsa_jni/kernels/product_sparse2d.brig" ),
+				   m_vector_sum(m_pcontext,"/home/bsp/hsa_jni/kernels/vector_sum.brig" ),
+				   m_vector_sum_template(m_pcontext,"/home/bsp/hsa_jni/kernels/vector_sum.brig" )
+
 
 {
 }
@@ -56,11 +62,14 @@ struct Algorithms
 	MinValue m_min_value;
 	MergeSort m_merge_sort;
 	SquareDistance m_square_distance;
+	SquareDistance2 m_square_distance2;
 	PerAttributeDistance m_per_attribute_distances;
 	Dump m_dump;
 	Reduce m_reduce;
 	SparseProduct m_sparse_product;
-
+	SparseProduct2D m_sparse_product_2d;
+	VectorSum m_vector_sum;
+	VectorSumTemplate m_vector_sum_template;
 };
 
 #endif /* CONTEXT_HPP_ */
