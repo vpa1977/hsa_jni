@@ -57,10 +57,10 @@ public class SGD extends moa.classifiers.functions.SGD implements
 			processBatch();
 			m_batch.commit();
 		}
-
+		
 	}
 
-	private void processBatch() {
+	private void processBatch(){
 		// Compute multiplier for weight decay
 		double multiplier = 1.0;
 		if (m_numInstances == 0) {

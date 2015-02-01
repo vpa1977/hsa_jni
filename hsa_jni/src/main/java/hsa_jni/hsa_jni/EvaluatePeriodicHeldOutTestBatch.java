@@ -155,9 +155,12 @@ public class EvaluatePeriodicHeldOutTestBatch extends MainTask {
             monitor.setCurrentActivityDescription("Training...");
             long instancesTarget = instancesProcessed
                     + this.sampleFrequencyOption.getValue();
+            
+            ArrayList<Instance> instanceCache = new ArrayList<Instance>();
             long trainStartTime = TimingUtils.getNanoCPUTimeOfCurrentThread();
+            double lastTrainTime = 0;
             while (instancesProcessed < instancesTarget && stream.hasMoreInstances() == true) {
-                learner.trainOnInstance(stream.nextInstance());
+            	instanceCache.add(stream.nextInstance());
                 instancesProcessed++;
                 if (instancesProcessed % INSTANCES_BETWEEN_MONITOR_UPDATES == 0) {
                     if (monitor.taskShouldAbort()) {
@@ -166,11 +169,27 @@ public class EvaluatePeriodicHeldOutTestBatch extends MainTask {
                     monitor.setCurrentActivityFractionComplete((double) (instancesProcessed)
                             / (double) (this.trainSizeOption.getValue()));
                 }
+                if (instanceCache.size() % 1000 == 0)
+                {
+                	trainStartTime = TimingUtils.getNanoCPUTimeOfCurrentThread();
+                    for (Instance inst : instanceCache) {
+                        learner.trainOnInstance(inst);
+                    }
+                    lastTrainTime += TimingUtils.nanoTimeToSeconds(TimingUtils.getNanoCPUTimeOfCurrentThread()
+                            - trainStartTime);
+                    instanceCache.clear();
+                }
+
+            }
+        	trainStartTime = TimingUtils.getNanoCPUTimeOfCurrentThread();
+            for (Instance inst : instanceCache) {
+                learner.trainOnInstance(inst);
             }
             if (learner instanceof BatchClassifier)
             	((BatchClassifier) learner).commit();
-            double lastTrainTime = TimingUtils.nanoTimeToSeconds(TimingUtils.getNanoCPUTimeOfCurrentThread()
+            lastTrainTime += TimingUtils.nanoTimeToSeconds(TimingUtils.getNanoCPUTimeOfCurrentThread()
                     - trainStartTime);
+            
             totalTrainTime += lastTrainTime;
             if (totalTrainTime > this.trainTimeOption.getValue()) {
                 break;

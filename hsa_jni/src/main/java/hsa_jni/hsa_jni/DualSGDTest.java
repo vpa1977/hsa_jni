@@ -70,7 +70,7 @@ public class DualSGDTest {
 				
 				
 				
-				EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
+				EvaluatePeriodicHeldOutTestBatch test = new EvaluatePeriodicHeldOutTestBatch();
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
 				test.testSizeOption.setValue(test_size);
@@ -80,7 +80,7 @@ public class DualSGDTest {
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
 				
-				test = new EvaluatePeriodicHeldOutTest();
+				test = new EvaluatePeriodicHeldOutTestBatch();
 				test.learnerOption.setCurrentObject(moaSGD);
 				test.streamOption.setCurrentObject(generator);
 				test.testSizeOption.setValue(test_size);
