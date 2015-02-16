@@ -26,12 +26,12 @@ public class DualClassifier extends AbstractClassifier{
 		
 	}
 
-	@Override
+
 	public boolean isRandomizable() {
 		return false;
 	}
 
-	@Override
+	
 	public double[] getVotesForInstance(Instance inst) {
 		double[] votes1 = m_classifier1.getVotesForInstance(inst);
 		double[] votes2 = m_classifier2.getVotesForInstance(inst);

@@ -308,7 +308,7 @@ public class EvaluatePeriodicHeldOutTestBatch extends MainTask {
         return learningCurve;
     }
 
-    @Override
+    
     public Class<?> getTaskResultType() {
         return LearningCurve.class;
     }

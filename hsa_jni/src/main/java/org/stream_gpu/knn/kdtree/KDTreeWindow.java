@@ -1,64 +1,92 @@
-/*
+
 package org.stream_gpu.knn.kdtree;
+import hsa_jni.hsa_jni.SparseInstanceAccess;
 import hsa_jni.hsa_jni.WekaHSAContext;
 
-import java.awt.ItemSelectable;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
+import java.util.Queue;
 
-
-
-
-
-
-
-import org.amd.sdk.BitonicSort;
-import org.stream_gpu.knn.BitonicSortAparapi;
-
-import com.amd.aparapi.device.Device;
+import org.moa.streams.Prediction;
 
 import weka.core.Instance;
 import weka.core.Instances;
 
 public class KDTreeWindow {
 	
-	private ArrayDeque<TreeItem> m_items;
 	private KDTreeNode m_root;
 	private int m_window_size;
 	private long m_current_id;
+	private int m_k;
+	private Queue<Prediction> m_result_queue;
+	
 	
 	
 	
 	public KDTreeWindow (WekaHSAContext context, int window_size, Instances dataset)
 	{
-		
-		m_items = new ArrayDeque<TreeItem>(window_size);
 		m_window_size = window_size;
-		m_root = new KDTreeNode(dataset, null);
+		m_root = new KDTreeNode(this,dataset, null);
 		m_root.SPLIT_VALUE = Math.min(window_size / 16, 32528);
 		m_root.COLLAPSE_VALUE = Math.min(window_size / 32, 4096);
 	}
 	
 	public void add( Instance inst)
 	{
-		
-		
-		TreeItem to_add = new TreeItem(m_current_id++, inst);
-		TreeItem to_remove = null;
-		if (m_items.size() >= m_window_size)
-		{
-			to_remove = m_items.remove();
-			to_remove.owner().remove( to_remove );
-		}
-		m_items.add(to_add);
+		TreeItem to_add = new TreeItem(m_current_id++, new SparseInstanceAccess(inst));
 		m_root.add(to_add);
 	}
 	
-	public int size() {
+	public int getInstanceCount() {
 		return m_root.size();
 	}
 	
-	public ArrayList<GpuInstance> findNearest(Instance test, int k)
+	public int size() 
+	{
+		return m_window_size;
+	}
+	
+	
+
+	public void setWorkQueue(Queue<Prediction> result_queue) {
+		m_result_queue = result_queue;		
+	}
+
+	public void evaluate(int k,Prediction prediction) {
+		Heap newHeap = new Heap(k);
+
+		scheduleFind(m_root, prediction, newHeap);
+	}
+	
+	
+	public void scheduleFind(KDTreeNode node, Prediction p, Heap h) {
+		if (node.isLeaf()) {
+			if (node.schedule(p, h)) 
+			{
+				
+			}
+		} else {
+			KDTreeNode nearer, further;
+			
+			boolean targetInLeft = p.instance().value(node.getSplitIndex()) <= node.getSplitValue();
+			if (targetInLeft) {
+				nearer = node.left();
+				further = node.right();
+			} else {
+				nearer = node.left();
+				further = node.right();
+			}
+			scheduleFind(nearer,p);
+		}
+	}
+
+	
+	
+
+	public boolean hasPendingQueries() {
+		return false;
+	}
+	
+	/*public ArrayList<GpuInstance> findNearest(Instance test, int k)
 	{
 		if (m_distance ==null) {
 			m_distance  = new GpuDistance(m_gpu_model);
@@ -164,6 +192,6 @@ public class KDTreeWindow {
 	public void print() {
 		m_root.print(System.out, 0);
 	}
+	*/
 
 }
-*/

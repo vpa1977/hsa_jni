@@ -1,14 +1,15 @@
 package org.stream_gpu.knn.kdtree;
 
+import hsa_jni.hsa_jni.SparseInstanceAccess;
 import weka.core.Instance;
 
 public class TreeItem {
 	
 	private long m_id;
-	private Instance m_instance;
+	private SparseInstanceAccess m_instance;
 	private KDTreeNode m_owner;
 	
-	public TreeItem( long id, Instance inst)
+	public TreeItem( long id, SparseInstanceAccess inst)
 	{
 		m_id = id;
 		m_instance = inst;
@@ -33,7 +34,6 @@ public class TreeItem {
 	
 
 	public long id() {
-		// TODO Auto-generated method stub
 		return m_id;
 	}
 	

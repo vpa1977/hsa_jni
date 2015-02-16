@@ -75,7 +75,7 @@ public class KnnGpuClassifier extends  AbstractClassifier {
 		return 0;
 	}
 
-	@Override
+	
 	public double[] getVotesForInstance(Instance arg0) {
 		m_native_context.computeKnn(arg0, m_tmp_distances, m_tmp_indexes);
 	//	printK(arg0);
@@ -89,7 +89,7 @@ public class KnnGpuClassifier extends  AbstractClassifier {
 		return null;
 	}
 
-	@Override
+	
 	public boolean isRandomizable() {
 		// TODO Auto-generated method stub
 		return false;

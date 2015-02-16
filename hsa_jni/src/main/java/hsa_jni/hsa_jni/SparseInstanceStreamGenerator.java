@@ -39,37 +39,37 @@ public class SparseInstanceStreamGenerator extends AbstractOptionHandler impleme
 		return new SparseInstanceStreamGenerator(m_generator);
 	}
 
-	@Override
+	
 	public void getDescription(StringBuilder sb, int indent) {
 		m_generator.getDescription(sb, indent);
 	}
 
-	@Override
+	
 	public InstancesHeader getHeader() {
 		return m_generator.getHeader();
 	}
 
-	@Override
+	
 	public long estimatedRemainingInstances() {
 		return m_generator.estimatedRemainingInstances();
 	}
 
-	@Override
+	
 	public boolean hasMoreInstances() {
 		return m_generator.hasMoreInstances();
 	}
 
-	@Override
+	
 	public Instance nextInstance() {
 		return new SparseInstanceAccess( m_generator.nextInstance());
 	}
 
-	@Override
+
 	public boolean isRestartable() {
 		return m_generator.isRestartable();
 	}
 
-	@Override
+
 	public void restart() {
 		m_generator.restart();
 	}

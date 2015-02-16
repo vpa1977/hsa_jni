@@ -3,6 +3,10 @@ package org.stream_gpu.knn.kdtree;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.Future;
+import java.util.function.Predicate;
+
+import org.moa.streams.Prediction;
 
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
@@ -10,35 +14,29 @@ import weka.core.Instances;
 
 public class KDTreeNode {
 
-	public static  int SPLIT_VALUE = 4;
-	public static  int COLLAPSE_VALUE = 2;
+	public static int SPLIT_VALUE = 2048;
+	public static int COLLAPSE_VALUE = 1024;
 
 	private Instances m_dataset;
-
 	private boolean m_is_leaf;
-
 	private KDTreeNode m_left = null;
-
 	private double m_max_distance;
-
 	private KDTreeNode m_parent;
-
 	private ValueRange[] m_ranges;
-
 	private KDTreeNode m_right = null;
-
 	private int m_split_index;
-
 	private double m_split_value;
+	private int m_size;
 
 	private ArrayList<TreeItem> m_values;
+	private KDTreeWindow m_window;
 
-	public KDTreeNode(Instances dataset, KDTreeNode parent) {
+	public KDTreeNode(KDTreeWindow window, Instances dataset, KDTreeNode parent) {
 		m_parent = parent;
 		m_is_leaf = true;
 		m_dataset = dataset;
 		m_values = new ArrayList<TreeItem>();
-	
+		m_window = window;
 		clearRanges();
 	}
 
@@ -48,27 +46,60 @@ public class KDTreeNode {
 		m_is_leaf = true;
 		m_dataset = dataset;
 		m_values = values;
-	
+
 		rescanRanges();
 		if (shouldSplit())
 			split();
 	}
 
-	public void add(TreeItem to_add) {
+	public void add(final TreeItem to_add) {
+		++m_size;
 		if (m_is_leaf) {
-			m_values.add(to_add);
 			to_add.setOwner(this);
+			m_values.add(to_add);
+			if (shouldSplit()) // try to clean obsolete instances if split
+								// criteria is met
+			{
+				int i = m_values.size() - 1;
+				for (; i >= 0; --i) {
+					if (to_add.id() - m_values.get(i).id() > m_window.size())
+						break;
+				}
+				if (i >= 0) {
+					int old_size = m_values.size();
+					m_values = new ArrayList<TreeItem>(m_values.subList(i,m_values.size()));
+					int diff = old_size - m_values.size();
+					m_parent.subtractSize(diff);
+					m_size -= diff;
+				}
+			}
+
 			if (shouldSplit())
 				split();
-		} else {
 
-			double value = to_add.instance().value(m_split_index);
-			if (value <= m_split_value)
-				m_left.add(to_add);
+		} else {
+			if (shouldCollapse())
+			{
+				m_is_leaf = true;
+				m_values = instances();
+				m_values.add(to_add);
+				m_left = null;
+				m_right = null;
+			}
 			else
-				m_right.add(to_add);
+			{
+				double value = to_add.instance().value(m_split_index);
+				if (value <= m_split_value)
+					m_left.add(to_add);
+				else
+					m_right.add(to_add);
+			}
 		}
 
+	}
+
+	private void subtractSize(int i) {
+		m_size -= i;
 	}
 
 	public ArrayList<TreeItem> instances() {
@@ -84,57 +115,24 @@ public class KDTreeNode {
 		return m_is_leaf;
 	}
 
-	public void remove(TreeItem to_remove) {
-		if (!isLeaf())
-			throw new RuntimeException("Unable to remove from non-leaf node");
-		if (!m_values.remove(to_remove))
-			throw new RuntimeException("Failed to remove " + to_remove.id());
-		if (m_values.size() < COLLAPSE_VALUE && m_parent != null)
-			m_parent.collapse(this);
-	}
-	
-	public void collapse( KDTreeNode remove )
-	{
-		if (m_parent == null)
-			return;
-		
-		KDTreeNode link;
-		if (remove == m_left)
-			link = m_right;
-		else if (remove == m_right)
-			link = m_left;
-		else
-			throw new RuntimeException("Unable to find proper child");
-		
-		link.m_parent = m_parent;
-		if (m_parent.m_left == this)
-			m_parent.m_left = link;
-		else if (m_parent.m_right == this)
-			m_parent.m_right = link;
-		else
-			throw new RuntimeException("Unable to link to parent");
-		
-		for (TreeItem item : remove.m_values)
-			m_parent.add(item);
-		
-		remove.m_values = null;
-		
-		this.m_parent = null;
-		this.m_left = null;
-		this.m_right = null;
-		
-	}
 
 
 	private boolean shouldSplit() {
 		return m_values.size() > SPLIT_VALUE;
 	}
 
+	private boolean shouldCollapse() {
+		return size() < COLLAPSE_VALUE;
+	}
+
 	public int size() {
-		if (isLeaf())
-			return m_values.size();
-		else
-			return m_left.size() + m_right.size();// fix recursion
+		return m_size;
+	}
+
+	public long getLastId() {
+		if (m_values.size() > 0)
+			return m_values.get(m_values.size() - 1).id();
+		return 0;
 	}
 
 	private void split() {
@@ -142,8 +140,8 @@ public class KDTreeNode {
 		if (m_split_index < 0)
 			return;
 		Iterator<TreeItem> it = m_values.iterator();
-		KDTreeNode left = new KDTreeNode(m_dataset, this);
-		KDTreeNode right = new KDTreeNode(m_dataset, this);
+		KDTreeNode left = new KDTreeNode(m_window, m_dataset, this);
+		KDTreeNode right = new KDTreeNode(m_window, m_dataset, this);
 		while (it.hasNext()) {
 			TreeItem inst = it.next();
 			if (inst.instance().value(m_split_index) <= m_split_value)
@@ -160,10 +158,6 @@ public class KDTreeNode {
 		m_values.clear();
 		m_is_leaf = false;
 	}
-
-
-	
-
 
 	public void print(PrintStream ps, int step) {
 		for (int i = 0; i < step; i++)
@@ -198,7 +192,7 @@ public class KDTreeNode {
 		for (int i = 0; i < m_ranges.length; i++)
 			m_ranges[i] = new ValueRange();
 	}
-	
+
 	private void rescanRanges() {
 		clearRanges();
 		Iterator<TreeItem> it = m_values.iterator();
@@ -206,7 +200,7 @@ public class KDTreeNode {
 			updateRanges(it.next());
 
 	}
-	
+
 	private void updateRanges(TreeItem inst) {
 		for (int i = 0; i < inst.instance().numAttributes(); i++) {
 			double value = inst.instance().value(i);
@@ -230,7 +224,6 @@ public class KDTreeNode {
 		}
 
 	}
-
 
 	public void printRanges() {
 		System.out.println("Ranges: index " + m_split_index + " value "
@@ -257,4 +250,42 @@ public class KDTreeNode {
 		return m_right;
 	}
 
+	public void schedule(Prediction instance) {
+		// TODO Auto-generated method stub
+		
 	}
+
+	/*
+	 * private Future<> scheduleSearch(Instance in) {
+	 * 
+	 * }
+	 * 
+	 * public Future<> getVotes(KDTreeWindow win, Instance in) { if (isLeaf())
+	 * return scheduleSearch(in); else { KDTreeNode nearer, further; boolean
+	 * targetInLeft = in.value(getSplitIndex()) <= getSplitValue(); if
+	 * (targetInLeft) { nearer = left(); further = right(); } else { nearer =
+	 * left(); further = right(); } }
+	 * 
+	 * if (node.isLeaf()) { findNearestForNode(m_gpu_model, heap, instance,
+	 * node, k); } else { KDTreeNode nearer, further;
+	 * 
+	 * boolean targetInLeft = instance.value(node.getSplitIndex()) <=
+	 * node.getSplitValue(); if (targetInLeft) { nearer = node.left(); further =
+	 * node.right(); } else { nearer = node.left(); further = node.right(); }
+	 * findNearest(nearer,instance, k, heap, distanceToParents);
+	 * 
+	 * if (heap.size() < k) { // if haven't found the first k double
+	 * distanceToSplitPlane = distanceToParents +
+	 * m_distance.sqDifference(node.getSplitIndex(),
+	 * instance.wekaInstance().value(node.getSplitIndex()),
+	 * node.getSplitValue()); findNearest(further,instance, k, heap,
+	 * distanceToSplitPlane); return; } else { // else see if ball centered at
+	 * query intersects with the // other // side. double distanceToSplitPlane =
+	 * distanceToParents + m_distance.sqDifference(node.getSplitIndex(),
+	 * instance.wekaInstance().value(node.getSplitIndex()),
+	 * node.getSplitValue()); if (heap.peek().distance() >=
+	 * distanceToSplitPlane) { findNearest(further,instance, k, heap,
+	 * distanceToSplitPlane); } }// end else } return null; }
+	 */
+
+}

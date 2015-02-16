@@ -4,12 +4,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+import org.moa.streams.Prediction;
+
 import weka.core.Instance;
 
 
 public class Heap {
 	
 	public class Entry {
+		public Entry(Instance i, double d)
+		{
+			m_instance = i;
+			m_distance =d;
+		}
 		public double m_distance;
 		public Instance m_instance;
 	}
@@ -20,12 +27,21 @@ public class Heap {
 	public Heap(int k)
 	{
 		m_queue = new PriorityQueue<Entry>(k, new Comparator<Entry>() {
-			@Override
+			
 			public int compare(Entry left, Entry right) {
 				return left.m_distance - right.m_distance > 0 ? -1 : 1;
 			}
 		});
 		m_k = k;
+	}
+	
+	
+	public void add(Instance inst, double dist)
+	{
+		Entry e = new Entry(inst,dist);
+		m_queue.add(e);
+		while (m_queue.size() > m_k)
+			m_queue.remove();
 	}
 	
 	public void add(Entry inst)

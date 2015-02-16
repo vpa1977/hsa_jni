@@ -175,7 +175,7 @@ public class SGD extends moa.classifiers.functions.SGD implements
 		return result;
 	}
 
-	@Override
+	
 	public void commit() {
 		processBatch();
 		m_batch.commit();
