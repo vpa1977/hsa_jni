@@ -13,12 +13,14 @@ public class ParallelKdTree extends AbstractParallelClassifier {
 	
 	private KDTreeWindow m_window;
 	private LinkedBlockingQueue<Prediction> m_queue;
+	private int m_k;
 	
-	public ParallelKdTree(KDTreeWindow window)
+	public ParallelKdTree(KDTreeWindow window, int k)
 	{
 		m_window = window;
 		m_queue = new LinkedBlockingQueue<Prediction>();
 		m_window.setWorkQueue(m_queue);
+		m_k = k;
 	}
 
 	public void synchronizeTraining() {
@@ -26,7 +28,7 @@ public class ParallelKdTree extends AbstractParallelClassifier {
 	}
 
 	public void evaluate(Prediction prediction) {
-		m_window.evaluate(prediction);		
+		m_window.evaluate(m_k, prediction);		
 	}
 
 	public Prediction take() {
@@ -53,13 +55,14 @@ public class ParallelKdTree extends AbstractParallelClassifier {
 
 	@Override
 	public void resetLearningImpl() {
-		// TODO Auto-generated method stub
+		
+		m_window.clear();
 		
 	}
 
 	@Override
 	public void trainOnInstanceImpl(Instance inst) {
-		// TODO Auto-generated method stub
+		m_window.add(inst);
 		
 	}
 

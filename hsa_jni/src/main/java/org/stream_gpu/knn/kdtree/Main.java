@@ -1,9 +1,7 @@
 package org.stream_gpu.knn.kdtree;
 
 import java.io.File;
-import java.io.IOException;
 
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 

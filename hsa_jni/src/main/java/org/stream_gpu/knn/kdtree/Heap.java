@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-import org.moa.streams.Prediction;
-
 import weka.core.Instance;
 
 
@@ -17,6 +15,10 @@ public class Heap {
 			m_instance = i;
 			m_distance =d;
 		}
+		public double distance() {
+			return m_distance;
+		}
+		
 		public double m_distance;
 		public Instance m_instance;
 	}

@@ -10,6 +10,10 @@ import hsa_jni.hsa_jni.config.FirstKnnExperiment;
 
 import javax.xml.bind.JAXB;
 
+import org.moa.streams.ParallelEvaluatePeriodicHeldOutTest;
+import org.moa.streams.ParallelKdTree;
+import org.stream_gpu.knn.kdtree.KDTreeWindow;
+
 import weka.classifiers.lazy.IBk;
 import weka.core.neighboursearch.KDTree;
 import weka.core.neighboursearch.LinearNNSearch;
@@ -54,7 +58,7 @@ public class DualKdTreeTest {
 				
 				WekaHSAContext context = new WekaHSAContext();
 				
-				KdTreeKnnGpuClassifier classifier = new KdTreeKnnGpuClassifier(context,experiment.getWindow(), experiment.getK());
+				
 				
 				IBk kMeans = new IBk(experiment.getK());
 				kMeans.setNearestNeighbourSearchAlgorithm(new KDTree());
@@ -72,26 +76,31 @@ public class DualKdTreeTest {
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
 				
 				
+				{
+					KDTreeWindow treeWindow = new KDTreeWindow(context, experiment.getWindow(), null);
+					ParallelKdTree classifier = new ParallelKdTree(treeWindow, experiment.getK());
+					ParallelEvaluatePeriodicHeldOutTest test = new ParallelEvaluatePeriodicHeldOutTest();
+					test.streamOption.setCurrentObject(generator);
+					test.learnerOption.setCurrentObject(classifier);
+					test.testSizeOption.setValue(test_size);
+					test.trainSizeOption.setValue(train_size);
+					System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
+					Object ret = test.doTask(new NullMonitor(),null);
+					System.out.println(ret);
+					System.out.println("---------------------------------------------------------------------------");
+				}
 				
-				EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
-				test.streamOption.setCurrentObject(generator);
-				test.learnerOption.setCurrentObject(classifier);
-				test.testSizeOption.setValue(test_size);
-				test.trainSizeOption.setValue(train_size);
-				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				Object ret = test.doTask(new NullMonitor(),null);
-				System.out.println(ret);
-				System.out.println("---------------------------------------------------------------------------");
-				
-				test = new EvaluatePeriodicHeldOutTest();
-				test.learnerOption.setCurrentObject(wekaClassifier);
-				test.streamOption.setCurrentObject(generator);
-				test.testSizeOption.setValue(test_size);
-				test.trainSizeOption.setValue(train_size);
-				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				ret = test.doTask(new NullMonitor(),null);
-				System.out.println(ret);
-				System.out.println("---------------------------------------------------------------------------");
+				{
+					EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
+					test.learnerOption.setCurrentObject(wekaClassifier);
+					test.streamOption.setCurrentObject(generator);
+					test.testSizeOption.setValue(test_size);
+					test.trainSizeOption.setValue(train_size);
+					System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
+					Object ret = test.doTask(new NullMonitor(),null);
+					System.out.println(ret);
+					System.out.println("---------------------------------------------------------------------------");
+				}
 
 			}
 			catch (Throwable t )

@@ -1,197 +1,104 @@
-
 package org.stream_gpu.knn.kdtree;
+
 import hsa_jni.hsa_jni.SparseInstanceAccess;
 import hsa_jni.hsa_jni.WekaHSAContext;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Queue;
 
+import org.moa.streams.EuclideanDistance;
 import org.moa.streams.Prediction;
 
 import weka.core.Instance;
 import weka.core.Instances;
 
 public class KDTreeWindow {
-	
 	private KDTreeNode m_root;
 	private int m_window_size;
 	private long m_current_id;
 	private int m_k;
 	private Queue<Prediction> m_result_queue;
-	
-	
-	
-	
-	public KDTreeWindow (WekaHSAContext context, int window_size, Instances dataset)
-	{
+	private ArrayList<TreeItem> m_window;
+	private LinkedList<WorkItem> m_pending_queue;
+	private EuclideanDistance m_min_max;
+
+	private double m_min_box_rel_width = 1E-2;
+	private Instances m_dataset;
+
+	public KDTreeWindow(WekaHSAContext context, int window_size,
+			Instances dataset) {
 		m_window_size = window_size;
-		m_root = new KDTreeNode(this,dataset, null);
-		m_root.SPLIT_VALUE = Math.min(window_size / 16, 32528);
-		m_root.COLLAPSE_VALUE = Math.min(window_size / 32, 4096);
+		m_dataset = dataset;
+		m_pending_queue = new LinkedList<WorkItem>();
+		m_window = new ArrayList<TreeItem>();
+		if (m_dataset != null)
+			clear();
 	}
-	
-	public void add( Instance inst)
-	{
-		TreeItem to_add = new TreeItem(m_current_id++, new SparseInstanceAccess(inst));
+
+	public void add(Instance inst) {
+		if (m_dataset == null)
+		{
+			m_dataset = inst.dataset();
+			clear();
+		}
+		TreeItem to_add = new TreeItem(m_current_id++,
+				new SparseInstanceAccess(inst));
+		TreeItem removed = null;
+		m_window.add(to_add);
+		if (m_window.size() > m_window_size)
+			removed = m_window.remove(0);
+		m_min_max.update(to_add.instance(), removed == null ? null :removed.instance());
 		m_root.add(to_add);
 	}
-	
+
 	public int getInstanceCount() {
 		return m_root.size();
 	}
-	
-	public int size() 
-	{
+
+	public int size() {
 		return m_window_size;
 	}
-	
-	
 
 	public void setWorkQueue(Queue<Prediction> result_queue) {
-		m_result_queue = result_queue;		
+		m_result_queue = result_queue;
 	}
 
-	public void evaluate(int k,Prediction prediction) {
-		Heap newHeap = new Heap(k);
-
-		scheduleFind(m_root, prediction, newHeap);
+	public void evaluate(int k, Prediction prediction) {
+		WorkItem newSearch = new WorkItem(k, prediction);
+		m_pending_queue.add(newSearch);
+		m_root.schedule(newSearch);
 	}
-	
-	
-	public void scheduleFind(KDTreeNode node, Prediction p, Heap h) {
-		if (node.isLeaf()) {
-			if (node.schedule(p, h)) 
-			{
-				
-			}
-		} else {
-			KDTreeNode nearer, further;
-			
-			boolean targetInLeft = p.instance().value(node.getSplitIndex()) <= node.getSplitValue();
-			if (targetInLeft) {
-				nearer = node.left();
-				further = node.right();
-			} else {
-				nearer = node.left();
-				further = node.right();
-			}
-			scheduleFind(nearer,p);
-		}
-	}
-
-	
-	
 
 	public boolean hasPendingQueries() {
-		return false;
-	}
-	
-	/*public ArrayList<GpuInstance> findNearest(Instance test, int k)
-	{
-		if (m_distance ==null) {
-			m_distance  = new GpuDistance(m_gpu_model);
-			for (TreeItem item : m_items)
-				m_distance.update(item.instance());
-		}
-		Heap h = new Heap(k);
-		GpuInstance gpu_instance =m_gpu_model.createInstance(test); 
-		findNearest(m_root, gpu_instance, k, h, 0);  
-		return h.toArray();
-	}
-	
-	public void findNearest(KDTreeNode node, GpuInstance instance, int k, Heap heap,
-			double distanceToParents) {
-		if (node.isLeaf()) {
-			findNearestForNode(m_gpu_model, heap, instance,  node, k);
-		} else {
-			KDTreeNode nearer, further;
-			
-			boolean targetInLeft = instance.wekaInstance().value(node.getSplitIndex()) <= node.getSplitValue();
-			if (targetInLeft) {
-				nearer = node.left();
-				further = node.right();
-			} else {
-				nearer = node.left();
-				further = node.right();
-			}
-			findNearest(nearer,instance, k, heap, distanceToParents);
-
-			if (heap.size() < k) { // if haven't found the first k
-				double distanceToSplitPlane = distanceToParents
-						+ m_distance.sqDifference(node.getSplitIndex(), 
-												 instance.wekaInstance().value(node.getSplitIndex()),
-												 node.getSplitValue());
-				findNearest(further,instance, k, heap, distanceToSplitPlane);
-				return;
-			} else {   // else see if ball centered at query intersects with the
-						// other
-						// side.
-				double distanceToSplitPlane = distanceToParents
-						+ m_distance.sqDifference(node.getSplitIndex(),
-								instance.wekaInstance().value(node.getSplitIndex()),
-								node.getSplitValue());
-				if (heap.peek().distance() >= distanceToSplitPlane) {
-					findNearest(further,instance, k, heap, distanceToSplitPlane);
-				}
-			}// end else	 
-		}
+		return m_pending_queue.size() > 0;
 	}
 
-	protected void findNearestForNode(GpuInstances gpu_model, Heap heap, GpuInstance instance, KDTreeNode node, int k) {
-			findNearestForNodeGPU(gpu_model, heap, instance, node, k);
+	public int getWorkSize() {
+		return 1024;
 	}
-	
-	protected void findNearestForNodeCPU(GpuInstances gpu_model, Heap heap, GpuInstance instance, KDTreeNode node) {
-		ArrayList<TreeItem> items = node.instances();
-		for (TreeItem item : items)
-		{
-			double distance = m_distance.distance(item.instance(), instance.wekaInstance());
-			GpuInstance heapEntry = item.gpuInstance();
-			heapEntry.setDistance((float)distance);
-			heap.add(heapEntry );
-		}
+
+	public int getK() {
+		return m_k;
 	}
-	
-	protected void findNearestForNodeGPU(GpuInstances gpu_model, Heap heap, GpuInstance instance, KDTreeNode node, int k) {
+
+	public void searchComplete(WorkItem instance) {
+		m_pending_queue.remove(instance);
+		m_result_queue.add(instance.m_prediction);
+	}
+
+	public double distance(int splitIndex, double value, double splitValue) {
+		return m_min_max.sqDifference(splitIndex, value, splitValue);
+	}
+
+	public void clear() {
+		if (m_dataset == null)
+			return;
+		m_root = new KDTreeNode(this, m_dataset, null);
+		m_root.SPLIT_VALUE = Math.min(m_window_size / 16, 32528);
+		m_root.COLLAPSE_VALUE = Math.min(m_window_size / 32, 4096);
+		m_min_max = new EuclideanDistance(m_dataset);
 		
-		float[] test = instance.data();
-		ArrayList<TreeItem> items = node.instances();
-		float[] values = new float[gpu_model.length() * items.size()];
-		int[] indices = new int[items.size()];
-		int i = 0;
-		long bc  = System.nanoTime();
-		for (TreeItem item : items)
-		{
-			indices[i] = i;
-			System.arraycopy(item.gpuInstance().data(), 0, values, (i++) * gpu_model.length() , gpu_model.length());
-		}
-		
-		long bk = System.nanoTime();
-		//System.out.println("Prepare:" + (bk - bc ));
-		bk = System.nanoTime();
-		m_distance_kernel.assign(values,test);
-		m_distance_kernel.compute(m_device, k);
-		long ac = System.nanoTime();
-		//System.out.println("Compute:" + ( ac - bk ));
-		ac = System.nanoTime();
-		m_sort.sort(Device.firstGPU(), m_distance_kernel.m_results , indices);
-		for (i = 0; i < k ; i ++ )
-		{
-			TreeItem item = items.get( indices[ i ]);
-			GpuInstance heapEntry = item.gpuInstance();
-			heapEntry.setDistance(m_distance_kernel.m_results[i]);
-			heap.add(heapEntry );
-		}
-		long ah = System.nanoTime();
-		//System.out.println("Sort:"+( ah - ac ));
 	}
-	
-	
-	
-
-	public void print() {
-		m_root.print(System.out, 0);
-	}
-	*/
 
 }
