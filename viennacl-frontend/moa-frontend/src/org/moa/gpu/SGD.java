@@ -1,6 +1,10 @@
 package org.moa.gpu;
 
+import org.moa.gpu.util.DirectMemory;
+
+import weka.core.DenseInstance;
 import weka.core.Instance;
+import weka.core.SparseInstance;
 import moa.classifiers.AbstractClassifier;
 import moa.core.Measurement;
 
@@ -22,7 +26,8 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 		m_init = false;
 	}
 	
-	private native double[] getVotesForInstance(Instance inst, Window w);
+	private native double[] getVotesForSparseInstance(long values,long indices, long indice_len,long total_len, Window w);
+	private native double[] getVotesForDenseInstance(long values,long total_len, Window w);
 	
 	/** 
 	 * retrain classifier on the sliding window
@@ -58,7 +63,51 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public double[] getVotesForInstance(Instance inst) {
-		return getVotesForInstance(inst, m_window);
+		int size = inst.numAttributes() - 1;
+		if (inst instanceof SparseInstance)
+		{
+			// TODO: optimize - pre-allocate handles 
+			AccessibleSparseInstance accessibleInstance = new AccessibleSparseInstance(inst);
+			double[] values = accessibleInstance.getValues();
+			int[] indices = accessibleInstance.getIndexes();
+			int len  = indices.length;
+			long valuesHandle = DirectMemory.allocate(DirectMemory.DOUBLE_SIZE * len);
+			long indicesHandle = DirectMemory.allocate(DirectMemory.INT_SIZE * len);
+			for (int i = 0 ; i < indices.length ; ++i)
+			{
+				if (indices[i] == inst.classIndex())
+				{
+					--len;
+					continue;
+				}
+				int offset = i > inst.classIndex() ? i -1 : i;
+				DirectMemory.write(valuesHandle, offset,  values[i]);
+				DirectMemory.write(indicesHandle, offset, indices[i]);
+			}
+			double[] result = getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
+			DirectMemory.free(valuesHandle);
+			DirectMemory.free(indicesHandle);
+			return result;
+		}
+		else
+		if (inst instanceof DenseInstance)
+		{
+			// TODO: optimize - reuse valuesHandle for dense instance
+			long valuesHandle = DirectMemory.allocate(DirectMemory.DOUBLE_SIZE * size);
+			for (int i = 0;i < inst.numAttributes() ; i ++ )
+			{
+				if (i == inst.classIndex())
+					continue;
+				int offset = i > inst.classIndex() ? i -1 : i;
+				DirectMemory.write(valuesHandle, offset,inst.value(i));
+			}
+			double[] result= getVotesForDenseInstance(valuesHandle, size, m_window);
+			DirectMemory.free(valuesHandle);
+			return result;
+			
+		}
+		else
+			throw new RuntimeException("Unsupported instance type");
 	}
 
 	
@@ -79,7 +128,10 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 			m_init = true;
 		}
 		if (m_window.full())
+		{
 			trainNative(m_window);
+			m_window.clear();
+		}
 	}
 
 	@Override
@@ -93,7 +145,6 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 		out.append("SGD implementation backed by viennacl ");
 	}
 	
-	private boolean m_nominal;
 	private static final int CONTEXT_SIZE = 128;  
 	private byte[] m_native_context = new byte[CONTEXT_SIZE]; 
 

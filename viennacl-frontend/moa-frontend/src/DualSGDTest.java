@@ -2,6 +2,7 @@
 
 import org.moa.gpu.Context;
 import org.moa.gpu.SGD;
+import org.moa.gpu.SimpleDirectMemoryWindow;
 import org.moa.gpu.SimpleWindow;
 import org.moa.gpu.config.*;
 
@@ -56,7 +57,7 @@ public class DualSGDTest {
 				int train_batch = experiment.getTestBatch();
 				int test_batch = experiment.getTrainBatch();
 				
-				SGD hsaSGD = new SGD(new SimpleWindow(1024),0);
+				SGD hsaSGD = new SGD(new SimpleDirectMemoryWindow(1024),0);
 				
 				
 				System.out.println("Test : window="+ window);

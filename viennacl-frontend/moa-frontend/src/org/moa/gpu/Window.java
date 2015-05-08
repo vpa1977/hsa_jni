@@ -24,6 +24,18 @@ public interface Window {
 	 * @return
 	 */
 	public Instance[] get();
+	
+	/** 
+	 * get attribute values 
+	 * @return
+	 */
+	public double[] getValues();
+	public int[] getRowIndices();
+	public int[] getColumnIndices();
+	public double[] getClassValues();
+	public int getRowCount();
+	public int getColumnCount();
+	
 	public boolean full();
 
 }
