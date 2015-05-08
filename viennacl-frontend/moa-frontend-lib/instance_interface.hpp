@@ -17,6 +17,7 @@ public:
 	double get_attribute(int index);
 	int get_class_index();
 	bool is_missing( int index);
+	int get_num_attributes();
 private:
 	JNIEnv* env_;
 	jobject instance_;
@@ -24,6 +25,7 @@ private:
 	jmethodID get_method_;
 	jmethodID class_index_method_;
 	jmethodID is_missing_method_;
+	jmethodID num_attributes_method_;
 
 };
 

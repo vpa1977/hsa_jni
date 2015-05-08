@@ -10,6 +10,8 @@
 #include <viennacl/ml/sgd.hpp>
 #include "instance_interface.hpp"
 #include "window_interface.hpp"
+#include <algorithm>
+
 
 viennacl::ml::sgd* GetNativeImpl(JNIEnv* env, jobject instance)
 {
@@ -25,21 +27,49 @@ viennacl::ml::sgd* GetNativeImpl(JNIEnv* env, jobject instance)
 
 
 
-JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForInstance
-  (JNIEnv * env, jobject sgd, jobject instance, jobject window)
+jdoubleArray votesForInstance(JNIEnv* env, viennacl::vector<double>& instance, jobject sgd)
 {
-	static jclass sgd_class = env->FindClass("org/moa/gpu/SGD");
-	static jfieldID is_nominal_field = env->GetFieldID(sgd_class, "m_nominal", "Z");
-	bool is_nominal_value = env->GetBooleanField(sgd, is_nominal_field);
-	size_t result_size = is_nominal_value ? 2 : 1;
-	jdoubleArray d = env->NewDoubleArray(result_size);
 	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
 
-	sgd_impl->print_warning();
+	bool is_nominal_value = sgd_impl->is_nominal();
+	size_t result_size = is_nominal_value ? 2 : 1;
+	jdoubleArray d = env->NewDoubleArray(result_size);
 
-
+	std::vector<double> result = sgd_impl->get_votes_for_instance(instance);
+	assert(result.size() == result_size);
+	env->SetDoubleArrayRegion(d,0, result_size, &result[0]);
 	return d;
+
 }
+
+
+
+/*
+ * Class:     org_moa_gpu_SGD
+ * Method:    getVotesForSparseInstance
+ * Signature: (JJJJLorg/moa/gpu/Window;)[D
+ */
+JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForSparseInstance
+  (JNIEnv * env, jobject sgd, jlong values, jlong indices, jlong ind_len, jlong total_len, jobject window)
+{
+	viennacl::vector<double> vcl_vector(total_len, get_global_context());
+	fill_sparse(vcl_vector, values, indices, ind_len, total_len);
+	return votesForInstance(env, vcl_vector, sgd);
+}
+
+/*
+ * Class:     org_moa_gpu_SGD
+ * Method:    getVotesForDenseInstance
+ * Signature: (JJLorg/moa/gpu/Window;)[D
+ */
+JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForDenseInstance
+  (JNIEnv * env, jobject sgd, jlong values, jlong total_len, jobject window)
+{
+	viennacl::vector<double> vcl_vector(total_len, get_global_context());
+	fill_dense(vcl_vector, values,  total_len);
+	return votesForInstance(env, vcl_vector, sgd);
+}
+
 
 
 /*
@@ -78,12 +108,23 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_dispose
 }
 
 
+
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
   (JNIEnv *env, jobject sgd, jobject window)
 {
 	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
-	std::vector<instance_interface> instances = get_window(env, window);
-	boost::numeric::ublas::matrix<double> m_values_matrix(instances.size(), sgd_impl->instance_size());
+	typedef boost::numeric::ublas::coordinate_matrix<double> double_matrix;
+	typedef boost::numeric::ublas::vector<double> double_vector;
+	direct_memory_window<double_matrix, double_vector> m_native_window(env, window);
+	viennacl::compressed_matrix<double>  values(m_native_window.values().size1(), m_native_window.values().size2(), get_global_context());
+	viennacl::vector<double> classes(m_native_window.classes().size(), get_global_context());
+	viennacl::copy(m_native_window.values(), values);
+	viennacl::copy(m_native_window.classes(), classes);
+	sgd_impl->train(classes, values);
+	//std::vector<instance_interface> instances = get_window(env, window);
+	//boost::numeric::ublas::coordinate_matrix<double> values_matrix(instances.size(), sgd_impl->instance_size());
+	//boost::numeric::ublas::vector<double> classes_vector(instances.size());
+	//instances_to_matrix(instances, values_matrix, classes_vector);
 }
 
 

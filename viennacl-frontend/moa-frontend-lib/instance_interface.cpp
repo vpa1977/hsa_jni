@@ -21,6 +21,9 @@ instance_interface::instance_interface(JNIEnv* env, jobject inst) : env_(env), i
 
 	static jmethodID is_missing_method = env->GetMethodID(instance_class, "isMissing","(I)Z");
 	is_missing_method_ = is_missing_method;
+
+	static jmethodID num_attributes_method = env->GetMethodID(instance_class, "numAttributes", "()I");
+	num_attributes_method_ = num_attributes_method;
 }
 
 double instance_interface::get_attribute(int index)
@@ -31,6 +34,11 @@ double instance_interface::get_attribute(int index)
 int instance_interface::get_class_index()
 {
 	return env_->CallIntMethod(instance_, class_index_method_);
+}
+
+int instance_interface::get_num_attributes()
+{
+	return env_->CallIntMethod(instance_, num_attributes_method_);
 }
 
 bool instance_interface::is_missing( int index)
