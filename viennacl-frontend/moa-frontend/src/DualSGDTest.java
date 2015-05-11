@@ -31,7 +31,7 @@ public class DualSGDTest {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
-		
+		System.out.println( System.getProperty("java.class.path"));
 		Context.load();
 		
 		RandomTreeGenerator d;

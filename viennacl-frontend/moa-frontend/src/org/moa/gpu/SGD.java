@@ -84,7 +84,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 				DirectMemory.write(valuesHandle, offset,  values[i]);
 				DirectMemory.write(indicesHandle, offset, indices[i]);
 			}
-			double[] result = getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
+			double[] result = new double[2];//getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
 			DirectMemory.free(valuesHandle);
 			DirectMemory.free(indicesHandle);
 			return result;
@@ -101,7 +101,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 				int offset = i > inst.classIndex() ? i -1 : i;
 				DirectMemory.write(valuesHandle, offset,inst.value(i));
 			}
-			double[] result= getVotesForDenseInstance(valuesHandle, size, m_window);
+			double[] result= new double[2];//getVotesForDenseInstance(valuesHandle, size, m_window);
 			DirectMemory.free(valuesHandle);
 			return result;
 			
@@ -144,8 +144,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 	public void getModelDescription(StringBuilder out, int indent) {
 		out.append("SGD implementation backed by viennacl ");
 	}
-	
-	private static final int CONTEXT_SIZE = 128;  
-	private byte[] m_native_context = new byte[CONTEXT_SIZE]; 
+	  
+	private long m_native_context; 
 
 }

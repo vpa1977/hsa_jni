@@ -34,10 +34,10 @@
 									<listOptionValue builtIn="false" value="/home/bsp/boost"/>
 									<listOptionValue builtIn="false" value="/home/bsp/git_repository/viennacl-frontend/moa-frontend"/>
 									<listOptionValue builtIn="false" value="/home/bsp/HSA-Runtime-AMD/include"/>
-									<listOptionValue builtIn="false" value="/home/bsp/appsdk2.9/AMDAPPSDK-2.9-1/include"/>
+									<listOptionValue builtIn="false" value="/home/bsp/appsdk3.0/AMDAPPSDK-3.0-0-Beta/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1421034174" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="VIENNACL_WITH_HSA"/>
+									<listOptionValue builtIn="false" value="VIENNACL_DEBUG_KERNEL"/>
 									<listOptionValue builtIn="false" value="VIENNACL_WITH_UBLAS"/>
 									<listOptionValue builtIn="false" value="VIENNACL_WITH_OPENCL"/>
 								</option>
@@ -57,12 +57,13 @@
 								<option defaultValue="true" id="gnu.cpp.link.so.debug.option.shared.735223485" name="Shared (-shared)" superClass="gnu.cpp.link.so.debug.option.shared" valueType="boolean"/>
 								<option id="gnu.cpp.link.option.libs.431113880" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="hsa-runtime64"/>
+									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="OpenCL"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1351940140" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/home/bsp/jdk8/lib/amd64"/>
 									<listOptionValue builtIn="false" value="/home/bsp/HSA-Runtime-AMD/lib"/>
-									<listOptionValue builtIn="false" value="/home/bsp/appsdk2.9/AMDAPPSDK-2.9-1/lib/x86_64"/>
+									<listOptionValue builtIn="false" value="/home/bsp/appsdk3.0/AMDAPPSDK-3.0-0-Beta/lib/x86_64"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.954155320" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

@@ -10,12 +10,13 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <viennacl/vector.hpp>
 
-viennacl::context g_context = viennacl::hsa::current_context();
+ viennacl::context g_context=  viennacl::ocl::current_context();
 
 viennacl::context& get_global_context()
 {
 	return g_context;
 }
+
 
 void write_pointer(JNIEnv* env , void * ptr, jbyteArray dst)
 {
