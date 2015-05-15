@@ -75,7 +75,7 @@ public class SimpleDirectMemoryWindow implements Window {
 		AccessibleSparseInstance sparse = new AccessibleSparseInstance(inst);
 		int[] indices = sparse.getIndexes();
 		double[] values = sparse.getValues();
-		assert(indices.length > 0);
+		assert(indices.length > 1);// 1 attribute is a class value
 		
 		long rowHandle = DirectMemory.allocate(indices.length * DirectMemory.DOUBLE_SIZE);
 		assert(rowHandle != 0);
@@ -93,7 +93,7 @@ public class SimpleDirectMemoryWindow implements Window {
 			long offset = indices[i];
 			if (offset > inst.classIndex())
 					--offset; 
-			DirectMemory.write(rowElementHandle, i, offset);
+			DirectMemory.write(rowElementHandle, i+1, offset);
 		}
 		DirectMemory.write(m_rows, m_index, rowHandle);
 		DirectMemory.write(m_element_count, m_index, rowElementHandle);

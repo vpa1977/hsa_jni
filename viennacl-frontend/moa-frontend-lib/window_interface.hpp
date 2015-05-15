@@ -146,7 +146,10 @@ public:
 			long num_atts = indices[0];
 			for (int att = 0; att < num_atts; ++att)
 			{
-				m_value_matrix(row, indices[att+1] )=  att_values[att];
+				long column = indices[att+1];
+
+				m_value_matrix(row,column  )=  att_values[att];
+			//	printf("%d,%d,%f\n", row, column, att_values[att]);
 			}
 			m_class_vector(row) = class_values[row];
 		}

@@ -91,7 +91,7 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_initNative
 	static jclass sgd_class = env->FindClass("org/moa/gpu/SGD");
 	static jfieldID context_field = env->GetFieldID(sgd_class, "m_native_context", "J");
 	assert(context_field != 0);
-	viennacl::ml::sgd* sgd_impl =  new viennacl::ml::sgd(size, (viennacl::ml::sgd::LossFunction)loss, get_global_context(),  nominal);
+	viennacl::ml::sgd* sgd_impl =  new viennacl::ml::sgd(size, 1024, (viennacl::ml::sgd::LossFunction)loss, get_global_context(),  nominal);
 	env->SetLongField(sgd, context_field, (jlong)sgd_impl);
 }
 
@@ -117,14 +117,15 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_dispose
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
   (JNIEnv *env, jobject sgd, jobject window)
 {
+	viennacl::context& ctx = get_global_context();
 	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
 	typedef boost::numeric::ublas::compressed_matrix<double> double_matrix;
 	typedef boost::numeric::ublas::vector<double> double_vector;
 	direct_memory_window<double_matrix, double_vector> m_native_window(env, window);
 	int rows = m_native_window.values().size1();
 	int columns = m_native_window.values().size2();
-	viennacl::compressed_matrix<double>  values(rows,columns, get_global_context());
-	viennacl::vector<double> classes(m_native_window.classes().size(), get_global_context());
+	viennacl::compressed_matrix<double>  values(rows,columns, ctx);
+	viennacl::vector<double> classes(m_native_window.classes().size(), ctx);
 	viennacl::copy(m_native_window.values(), values);
 	viennacl::copy(m_native_window.classes(), classes);
 	sgd_impl->train(classes, values);

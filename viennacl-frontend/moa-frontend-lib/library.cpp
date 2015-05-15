@@ -14,6 +14,12 @@
 
 viennacl::context& get_global_context()
 {
+	static bool init = false;
+	if (!init)
+	{
+		viennacl::ocl::context* ctx = g_context.opencl_pcontext();
+		ctx->build_options("-cl-std=CL2.0 -g -D CL_VERSION_2_0");
+	}
 	return g_context;
 }
 
