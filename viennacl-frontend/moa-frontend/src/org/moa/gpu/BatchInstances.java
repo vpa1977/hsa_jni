@@ -2,7 +2,7 @@ package org.moa.gpu;
 
 import weka.core.Instance;
 
-public interface Window {
+public interface BatchInstances {
 
 	/* 
 	 * Clear the window
@@ -25,17 +25,9 @@ public interface Window {
 	 */
 	public Instance[] get();
 	
-	/** 
-	 * get attribute values 
-	 * @return
-	 */
-	public double[] getValues();
-	public int[] getRowIndices();
-	public int[] getColumnIndices();
-	public double[] getClassValues();
-	public int getRowCount();
-	public int getColumnCount();
 	
 	public boolean full();
+	int getRowCount();
+	int getColumnCount();
 
 }

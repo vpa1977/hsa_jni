@@ -39,10 +39,12 @@ public class DirectMemory {
 		m_direct_memory.putLong(handle + index(LONG_SIZE, index), value);
 	}
 	
-	public static void write(long handle, int index, int value)
+	/*
+	 * public static void write(long handle, int index, int value)
+	
 	{
 		m_direct_memory.putLong(handle + index(INT_SIZE, index), value);
-	}
+	}*/
 
 	
 	private static long index(long size_in_bytes, int index)

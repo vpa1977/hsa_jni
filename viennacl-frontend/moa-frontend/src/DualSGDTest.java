@@ -2,7 +2,7 @@
 
 import org.moa.gpu.Context;
 import org.moa.gpu.SGD;
-import org.moa.gpu.SimpleDirectMemoryWindow;
+import org.moa.gpu.SimpleDirectMemoryBatchInstances;
 import org.moa.gpu.SimpleWindow;
 import org.moa.gpu.config.*;
 
@@ -45,7 +45,9 @@ public class DualSGDTest {
 		{
 			try {
 				
-				moa.classifiers.functions.SGD moaSGD = new moa.classifiers.functions.SGD();
+								
+				
+				test.SGD moaSGD = new test.SGD();
 				String generatorCLI = experiment.getGenerator();
 				
 				InstanceStream generator = (InstanceStream)ClassOption.cliStringToObject(generatorCLI,InstanceStream.class, null );
@@ -57,12 +59,12 @@ public class DualSGDTest {
 				int train_batch = experiment.getTestBatch();
 				int test_batch = experiment.getTrainBatch();
 				
-				SGD hsaSGD = new SGD(new SimpleDirectMemoryWindow(1024),0);
+				SGD hsaSGD = new SGD(new SimpleDirectMemoryBatchInstances(train_batch),0);
 				
 				
 				System.out.println("Test : window="+ window);
-				System.out.println("     : test_batch="+ test_batch);
-				System.out.println("     : train_batch="+ train_batch);
+				//System.out.println("     : test_batch="+ test_batch);
+				//System.out.println("     : train_batch="+ train_batch);
 				
 				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size);
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());

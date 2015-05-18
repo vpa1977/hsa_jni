@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import weka.core.Instance;
 
-public class SimpleWindow implements Window {
+public class SimpleWindow implements BatchInstances {
 	
 	private Instance[] m_instances;
 	
@@ -65,25 +65,25 @@ public class SimpleWindow implements Window {
 		return m_full;
 	}
 
-	@Override
+
 	public double[] getValues() {
 		initArrays();
 		return m_values;
 	}
 
-	@Override
+
 	public int[] getRowIndices() {
 		initArrays();
 		return m_rows;
 	}
 
-	@Override
+
 	public int[] getColumnIndices() {
 		initArrays();
 		return m_columns;
 	}
 
-	@Override
+
 	public double[] getClassValues() {
 		initArrays();
 		return m_classes;

@@ -8,6 +8,8 @@
 #ifndef LIBRARY_HPP_
 #define LIBRARY_HPP_
 
+
+
 #include <jni.h>
 #include "viennacl/context.hpp"
 

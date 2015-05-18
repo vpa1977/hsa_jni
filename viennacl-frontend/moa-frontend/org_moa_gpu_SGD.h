@@ -9,12 +9,10 @@ extern "C" {
 #endif
 #undef org_moa_gpu_SGD_serialVersionUID
 #define org_moa_gpu_SGD_serialVersionUID 1LL
-#undef org_moa_gpu_SGD_CONTEXT_SIZE
-#define org_moa_gpu_SGD_CONTEXT_SIZE 128L
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    getVotesForSparseInstance
- * Signature: (JJJJLorg/moa/gpu/Window;)[D
+ * Signature: (JJJJLorg/moa/gpu/BatchInstances;)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForSparseInstance
   (JNIEnv *, jobject, jlong, jlong, jlong, jlong, jobject);
@@ -22,7 +20,7 @@ JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForSparseInstance
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    getVotesForDenseInstance
- * Signature: (JJLorg/moa/gpu/Window;)[D
+ * Signature: (JJLorg/moa/gpu/BatchInstances;)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForDenseInstance
   (JNIEnv *, jobject, jlong, jlong, jobject);
@@ -30,7 +28,7 @@ JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForDenseInstance
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    trainNative
- * Signature: (Lorg/moa/gpu/Window;)V
+ * Signature: (Lorg/moa/gpu/BatchInstances;)V
  */
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
   (JNIEnv *, jobject, jobject);
@@ -38,10 +36,10 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    initNative
- * Signature: (IIZ)V
+ * Signature: (IIIZDD)V
  */
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_initNative
-  (JNIEnv *, jobject, jint, jint, jboolean);
+  (JNIEnv *, jobject, jint, jint, jint, jboolean, jdouble, jdouble);
 
 /*
  * Class:     org_moa_gpu_SGD

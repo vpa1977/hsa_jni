@@ -10,7 +10,8 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <viennacl/vector.hpp>
 
- viennacl::context g_context=  viennacl::ocl::current_context();
+ //viennacl::context g_context(viennacl::MAIN_MEMORY);// =   viennacl::ocl::current_context();
+ viennacl::context g_context  =   viennacl::ocl::current_context();
 
 viennacl::context& get_global_context()
 {
@@ -18,7 +19,7 @@ viennacl::context& get_global_context()
 	if (!init)
 	{
 		viennacl::ocl::context* ctx = g_context.opencl_pcontext();
-		ctx->build_options("-cl-std=CL2.0 -g -D CL_VERSION_2_0");
+		ctx->build_options("-cl-std=CL2.0 -D CL_VERSION_2_0");
 	}
 	return g_context;
 }
@@ -41,7 +42,7 @@ void read_pointer(JNIEnv* env, jbyteArray src, void** ptr)
 void fill_sparse(viennacl::vector<double>& vcl_vector, jlong values, jlong indices, jlong ind_len, jlong total_len )
 {
 	boost::numeric::ublas::vector<double> cpu_instance(total_len);
-	int * ind = (int*)indices;
+	long * ind = (long*)indices;
 	double* val = (double*)values;
 	for (int i = 0; i < ind_len ; ++i)
 	{

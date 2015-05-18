@@ -1,0 +1,12 @@
+@relation test_set
+
+@attribute class  {0,1}
+@attribute attribute1 numeric
+
+@data
+1,0.1
+1,0.2
+1,0.3
+0,0.6
+0,0.7
+0,0.8

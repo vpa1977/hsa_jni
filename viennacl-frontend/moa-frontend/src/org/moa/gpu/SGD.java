@@ -15,25 +15,29 @@ import moa.core.Measurement;
  */
 public class SGD extends AbstractClassifier implements NativeClassifier {
 	
-	private Window m_window;
+	private BatchInstances m_window;
 	private boolean m_init;
 	private int m_loss;
+	protected double m_learning_rate = 0.0001;
 
-	public SGD(Window w, int loss)
+    /** The regularization parameter */
+    protected double m_lambda = 0.0001;
+
+	public SGD(BatchInstances w, int loss)
 	{
 		m_window = w;
 		m_loss = loss;
 		m_init = false;
 	}
 	
-	private native double[] getVotesForSparseInstance(long values,long indices, long indice_len,long total_len, Window w);
-	private native double[] getVotesForDenseInstance(long values,long total_len, Window w);
+	private native double[] getVotesForSparseInstance(long values,long indices, long indice_len,long total_len, BatchInstances w);
+	private native double[] getVotesForDenseInstance(long values,long total_len, BatchInstances w);
 	
 	/** 
 	 * retrain classifier on the sliding window
 	 * @param w
 	 */
-	private native void trainNative(Window w);
+	private native void trainNative(BatchInstances w);
 	
 	
 	/** 
@@ -44,7 +48,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 	 * @param loss
 	 * @param nominal
 	 */
-	private native void initNative(int size, int loss, boolean nominal);
+	private native void initNative(int num_attr, int batch_size, int loss, boolean nominal, double learning_rate, double lambda);
 	/** 
 	 * dispose native context and all natively allocated structures
 	 */
@@ -70,21 +74,20 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 			AccessibleSparseInstance accessibleInstance = new AccessibleSparseInstance(inst);
 			double[] values = accessibleInstance.getValues();
 			int[] indices = accessibleInstance.getIndexes();
-			int len  = indices.length;
+			int len  = indices.length-1;
 			long valuesHandle = DirectMemory.allocate(DirectMemory.DOUBLE_SIZE * len);
-			long indicesHandle = DirectMemory.allocate(DirectMemory.INT_SIZE * len);
+			long indicesHandle = DirectMemory.allocate(DirectMemory.LONG_SIZE * len);
+			int idx = 0;
 			for (int i = 0 ; i < indices.length ; ++i)
 			{
 				if (indices[i] == inst.classIndex())
-				{
-					--len;
 					continue;
-				}
-				int offset = i > inst.classIndex() ? i -1 : i;
-				DirectMemory.write(valuesHandle, offset,  values[i]);
-				DirectMemory.write(indicesHandle, offset, indices[i]);
+				int offset = indices[i] > inst.classIndex() ? indices[i] -1 : indices[i];
+				DirectMemory.write(valuesHandle, idx,  values[i]);
+				DirectMemory.write(indicesHandle, idx, offset);
+				idx++;
 			}
-			double[] result = new double[2];//getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
+			double[] result = getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
 			DirectMemory.free(valuesHandle);
 			DirectMemory.free(indicesHandle);
 			return result;
@@ -101,7 +104,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 				int offset = i > inst.classIndex() ? i -1 : i;
 				DirectMemory.write(valuesHandle, offset,inst.value(i));
 			}
-			double[] result= new double[2];//getVotesForDenseInstance(valuesHandle, size, m_window);
+			double[] result= getVotesForDenseInstance(valuesHandle, size, m_window);
 			DirectMemory.free(valuesHandle);
 			return result;
 			
@@ -124,7 +127,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 		m_window.add(inst);
 		if (!m_init)
 		{
-			initNative(inst.numAttributes() -1, m_loss, inst.classAttribute().isNominal());
+			initNative(inst.numAttributes() -1, m_window.getRowCount(),m_loss,   inst.classAttribute().isNominal(), m_learning_rate, m_lambda);
 			m_init = true;
 		}
 		if (m_window.full())

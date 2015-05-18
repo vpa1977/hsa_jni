@@ -15,6 +15,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
+/*
 template <class ublas_matrix, class ublas_vector>
 class native_window
 {
@@ -103,6 +104,7 @@ private:
 	jobject window_;
 };
 
+*/
 
 template <class ublas_matrix, class ublas_vector>
 class direct_memory_window
@@ -116,39 +118,45 @@ public:
 		static jmethodID get_classes_method_id;
 		static jmethodID get_row_count_method_id;
 		static jmethodID get_column_count_method_id;
-		static jmethodID get_element_count_method_id;
+		static jmethodID get_column_indices_method_id;
+		static jmethodID get_row_number_of_elements_method_id;
 
 		if (!init)
 		{
-			window_class = env->FindClass("org/moa/gpu/SimpleDirectMemoryWindow");
-			get_rows_method_id = env->GetMethodID(window_class, "rowHandle", "()J");
+			window_class = env->FindClass("org/moa/gpu/SimpleDirectMemoryBatchInstances");
+			get_rows_method_id = env->GetMethodID(window_class, "rows", "()J");
+			get_column_indices_method_id = env->GetMethodID(window_class, "columnIndices", "()J");
+			get_classes_method_id = env->GetMethodID(window_class, "classes", "()J");
+			get_row_number_of_elements_method_id = env->GetMethodID(window_class, "rowNumberOfElements", "()J");
+
 			get_row_count_method_id = env->GetMethodID(window_class, "getRowCount", "()I");
 			get_column_count_method_id = env->GetMethodID(window_class, "getColumnCount", "()I");
-			get_element_count_method_id = env->GetMethodID(window_class, "getElementCount", "()J");
-			get_classes_method_id = env->GetMethodID(window_class, "classesHandle", "()J");
+
+
 			init = true;
 		}
 
 
 		int rows_count = env_->CallIntMethod(window, get_row_count_method_id);
 		int columns_count = env_->CallIntMethod(window, get_column_count_method_id);
+
 		m_value_matrix = ublas_matrix(rows_count,columns_count);
 		m_class_vector = ublas_vector(rows_count);
 
-		long ** elements = (long**)env_->CallLongMethod(window, get_element_count_method_id);
+		long *  row_element_count = (long*)env_->CallLongMethod(window, get_row_number_of_elements_method_id);
+		long ** column_indices = (long**)env_->CallLongMethod(window, get_column_indices_method_id);
 		double ** values = (double**)env_->CallLongMethod(window, get_rows_method_id);
 		double * class_values = (double*)env_->CallLongMethod(window, get_classes_method_id);
 
 		for (int row = 0; row < rows_count ; ++ row)
 		{
-			long* indices = elements[row];
+			long* indices = column_indices[row];
 			double * att_values = values[row];
-			long num_atts = indices[0];
+			long num_atts = row_element_count[row];
 			for (int att = 0; att < num_atts; ++att)
 			{
-				long column = indices[att+1];
-
-				m_value_matrix(row,column  )=  att_values[att];
+				long column = indices[att];
+				m_value_matrix(row,column )=  att_values[att];
 			//	printf("%d,%d,%f\n", row, column, att_values[att]);
 			}
 			m_class_vector(row) = class_values[row];
