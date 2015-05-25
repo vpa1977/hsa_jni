@@ -59,17 +59,18 @@ public class DualSGDTest {
 				int train_batch = experiment.getTestBatch();
 				int test_batch = experiment.getTrainBatch();
 				
-				SGD hsaSGD = new SGD(new SimpleDirectMemoryBatchInstances(train_batch),0);
+				
+				SGD hsaSGD = new SGD();
 				
 				
-				System.out.println("Test : window="+ window);
+				//System.out.println("Test : window="+ window);
 				//System.out.println("     : test_batch="+ test_batch);
 				//System.out.println("     : train_batch="+ train_batch);
 				
-				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size);
+				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size + " train batch="+window);
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
 				
-				
+				hsaSGD.learningBatchSize.setValue(window);
 				
 				
 				EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();

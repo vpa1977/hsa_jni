@@ -54,7 +54,7 @@ public class AccessibleSparseInstance extends SparseInstance {
 	    }
 	}
 
-	public int[] getIndexes() {
+	public int[] getIndices() {
 		return m_Indices;
 	}
 

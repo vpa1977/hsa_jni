@@ -1,12 +1,20 @@
 package org.moa.gpu;
 
+import org.moa.gpu.bridge.NativeClassifier;
+import org.moa.gpu.bridge.NativeInstance;
+import org.moa.gpu.bridge.NativeInstanceBatch;
+import org.moa.gpu.bridge.NativeSparseInstance;
 import org.moa.gpu.util.DirectMemory;
 
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.SparseInstance;
 import moa.classifiers.AbstractClassifier;
+import moa.core.DoubleVector;
 import moa.core.Measurement;
+import moa.options.FloatOption;
+import moa.options.IntOption;
+import moa.options.MultiChoiceOption;
 
 /** 
  * SGD implementation backed by the native library.
@@ -15,29 +23,52 @@ import moa.core.Measurement;
  */
 public class SGD extends AbstractClassifier implements NativeClassifier {
 	
-	private BatchInstances m_window;
-	private boolean m_init;
-	private int m_loss;
-	protected double m_learning_rate = 0.0001;
-
+	private NativeInstanceBatch m_native_batch;
+	
+	
     /** The regularization parameter */
     protected double m_lambda = 0.0001;
 
-	public SGD(BatchInstances w, int loss)
-	{
-		m_window = w;
-		m_loss = loss;
-		m_init = false;
-	}
+    public FloatOption lambdaRegularizationOption = new FloatOption("lambdaRegularization",
+            'l', "Lambda regularization parameter .",
+            0.0001, 0.00, Integer.MAX_VALUE);
+
+    public FloatOption learningRateOption = new FloatOption("learningRate",
+            'r', "Learning rate parameter.",
+            0.0001, 0.00, Integer.MAX_VALUE);
+    
+    public MultiChoiceOption lossFunctionOption = new MultiChoiceOption(
+            "lossFunction", 'o', "The loss function to use.", new String[]{
+                "HINGE", "LOGLOSS", "SQUAREDLOSS"}, new String[]{
+                "Hinge loss (SVM)",
+                "Log loss (logistic regression)",
+                "Squared loss (regression)"}, 0);
+    
+    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 1024, 2, Integer.MAX_VALUE);
+    
+
+    protected static final int HINGE = 0;
+
+    protected static final int LOGLOSS = 1;
+
+    protected static final int SQUAREDLOSS = 2;
+
+    /** The current loss function to minimize */
+    protected int m_loss = HINGE;
+
+	protected double m_learning_rate = 0.0001;
+	private int m_batch_size;
+	private boolean m_native_init = false;
+
 	
-	private native double[] getVotesForSparseInstance(long values,long indices, long indice_len,long total_len, BatchInstances w);
-	private native double[] getVotesForDenseInstance(long values,long total_len, BatchInstances w);
+	private native double[] getVotesForSparseInstance(NativeSparseInstance inst );
+	
 	
 	/** 
-	 * retrain classifier on the sliding window
+	 * Train on the next batch
 	 * @param w
 	 */
-	private native void trainNative(BatchInstances w);
+	private native void trainNative(NativeInstanceBatch w);
 	
 	
 	/** 
@@ -67,73 +98,43 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public double[] getVotesForInstance(Instance inst) {
-		int size = inst.numAttributes() - 1;
-		if (inst instanceof SparseInstance)
-		{
-			// TODO: optimize - pre-allocate handles 
-			AccessibleSparseInstance accessibleInstance = new AccessibleSparseInstance(inst);
-			double[] values = accessibleInstance.getValues();
-			int[] indices = accessibleInstance.getIndexes();
-			int len  = indices.length-1;
-			long valuesHandle = DirectMemory.allocate(DirectMemory.DOUBLE_SIZE * len);
-			long indicesHandle = DirectMemory.allocate(DirectMemory.LONG_SIZE * len);
-			int idx = 0;
-			for (int i = 0 ; i < indices.length ; ++i)
-			{
-				if (indices[i] == inst.classIndex())
-					continue;
-				int offset = indices[i] > inst.classIndex() ? indices[i] -1 : indices[i];
-				DirectMemory.write(valuesHandle, idx,  values[i]);
-				DirectMemory.write(indicesHandle, idx, offset);
-				idx++;
-			}
-			double[] result = getVotesForSparseInstance(valuesHandle, indicesHandle, len, size, m_window);
-			DirectMemory.free(valuesHandle);
-			DirectMemory.free(indicesHandle);
-			return result;
-		}
-		else
-		if (inst instanceof DenseInstance)
-		{
-			// TODO: optimize - reuse valuesHandle for dense instance
-			long valuesHandle = DirectMemory.allocate(DirectMemory.DOUBLE_SIZE * size);
-			for (int i = 0;i < inst.numAttributes() ; i ++ )
-			{
-				if (i == inst.classIndex())
-					continue;
-				int offset = i > inst.classIndex() ? i -1 : i;
-				DirectMemory.write(valuesHandle, offset,inst.value(i));
-			}
-			double[] result= getVotesForDenseInstance(valuesHandle, size, m_window);
-			DirectMemory.free(valuesHandle);
-			return result;
-			
-		}
-		else
-			throw new RuntimeException("Unsupported instance type");
+		if (inst instanceof NativeSparseInstance)
+			return getVotesForSparseInstance((NativeSparseInstance)inst);
+		throw new RuntimeException("Unsupported instance type");
 	}
 
 	
 
 	@Override
 	public void resetLearningImpl() {
-		m_window.clear();
-		
-		
+        m_lambda = this.lambdaRegularizationOption.getValue();
+        m_learning_rate = this.learningRateOption.getValue();
+        m_loss = this.lossFunctionOption.getChosenIndex();
+        m_batch_size = learningBatchSize.getValue();
+        m_native_batch = null;
 	}
 
 	@Override
 	public void trainOnInstanceImpl(Instance inst) {
-		m_window.add(inst);
-		if (!m_init)
+		if (!(inst instanceof NativeInstance)) 
+			throw new RuntimeException("Only NativeInstance is supported");
+		
+		if (!m_native_init)
 		{
-			initNative(inst.numAttributes() -1, m_window.getRowCount(),m_loss,   inst.classAttribute().isNominal(), m_learning_rate, m_lambda);
-			m_init = true;
+			initNative(inst.numAttributes() -1, m_batch_size,m_loss,   inst.classAttribute().isNominal(), m_learning_rate, m_lambda);
+			m_native_init = true;
 		}
-		if (m_window.full())
+		
+		if (m_native_batch == null)
 		{
-			trainNative(m_window);
-			m_window.clear();
+			m_native_batch = new NativeInstanceBatch(inst.dataset(), m_batch_size);
+		}
+		boolean full = m_native_batch.addInstance((NativeInstance) inst);
+		if (full)
+		{
+			trainNative(m_native_batch);
+			m_native_batch.clearBatch();
+			m_native_batch.addInstance((NativeInstance) inst);
 		}
 	}
 

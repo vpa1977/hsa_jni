@@ -96,7 +96,7 @@ public class SimpleDirectMemoryBatchInstances implements BatchInstances {
 		}
 		m_column_count = inst.numAttributes() -1;
 		AccessibleSparseInstance sparse = new AccessibleSparseInstance(inst);
-		int[] indices = sparse.getIndexes();
+		int[] indices = sparse.getIndices();
 		double[] values = sparse.getValues();
 		
 		assert(indices.length > 1);// 1 attribute is a class value

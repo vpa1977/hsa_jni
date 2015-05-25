@@ -11,10 +11,11 @@
 #include <viennacl/vector.hpp>
 
  //viennacl::context g_context(viennacl::MAIN_MEMORY);// =   viennacl::ocl::current_context();
- viennacl::context g_context  =   viennacl::ocl::current_context();
+
 
 viennacl::context& get_global_context()
 {
+	static viennacl::context g_context =   viennacl::ocl::current_context();
 	static bool init = false;
 	if (!init)
 	{

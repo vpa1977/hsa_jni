@@ -9,7 +9,8 @@
 #include "org_moa_gpu_SGD.h"
 #include <viennacl/ml/sgd.hpp>
 #include "instance_interface.hpp"
-#include "window_interface.hpp"
+//#include "window_interface.hpp"
+#include "native_instance_batch.hpp"
 #include <algorithm>
 
 
@@ -41,35 +42,23 @@ jdoubleArray votesForInstance(JNIEnv* env, viennacl::vector<double>& instance, j
 
 }
 
-
-
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    getVotesForSparseInstance
- * Signature: (JJJJLorg/moa/gpu/Window;)[D
+ * Signature: (Lorg/moa/gpu/bridge/NativeSparseInstance;)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForSparseInstance
-  (JNIEnv * env, jobject sgd, jlong values, jlong indices, jlong ind_len, jlong total_len, jobject window)
+  (JNIEnv *env, jobject sgd, jobject native_instance)
 {
-	viennacl::vector<double> vcl_vector(total_len, get_global_context());
-	fill_sparse(vcl_vector, values, indices, ind_len, total_len);
-	return votesForInstance(env, vcl_vector, sgd);
+	static jclass _instance_class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstance");
+	static jfieldID _instance_context_field = env->GetFieldID(_instance_class, "m_native_context", "J");
+	sparse_storage* storage = (sparse_storage*)env->GetLongField(native_instance, _instance_context_field);
+	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
+	instance_interface iface(env,native_instance);
+
+	viennacl::vector<double> instance = storage->vector(sgd_impl->instance_size());
+	return votesForInstance(env, instance, sgd);
 }
-
-/*
- * Class:     org_moa_gpu_SGD
- * Method:    getVotesForDenseInstance
- * Signature: (JJLorg/moa/gpu/Window;)[D
- */
-JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForDenseInstance
-  (JNIEnv * env, jobject sgd, jlong values, jlong total_len, jobject window)
-{
-	viennacl::vector<double> vcl_vector(total_len, get_global_context());
-	fill_dense(vcl_vector, values,  total_len);
-	return votesForInstance(env, vcl_vector, sgd);
-}
-
-
 
 
 /*
@@ -105,25 +94,20 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_dispose
 	env->SetLongField(sgd, context_field, 0);
 }
 
-static int count = 0;
-
 
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
-  (JNIEnv *env, jobject sgd, jobject window)
+  (JNIEnv *env, jobject sgd, jobject instance_batch)
 {
-	//printf("processing %d \n", ++count);
-	viennacl::context& ctx = get_global_context();
 	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
-	typedef boost::numeric::ublas::compressed_matrix<double> double_matrix;
-	typedef boost::numeric::ublas::vector<double> double_vector;
-	direct_memory_window<double_matrix, double_vector> m_native_window(env, window);
-	int rows = m_native_window.values().size1();
-	int columns = m_native_window.values().size2();
-	static viennacl::compressed_matrix<double>  values(rows,columns, ctx);
-	static viennacl::vector<double> classes(m_native_window.classes().size(), ctx);
-	viennacl::copy(m_native_window.values(), values);
-	viennacl::copy(m_native_window.classes(), classes);
-	sgd_impl->train(classes, values);
+
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeInstanceBatch");
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	native_instance_batch* batch = (native_instance_batch*)env->GetLongField(instance_batch, _context_field);
+	batch->commit();
+	sgd_impl->train(batch->m_class_values, batch->m_instance_values);
+//	printf("done training\n");
+
+
 }
 
 
