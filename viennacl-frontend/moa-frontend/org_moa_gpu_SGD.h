@@ -26,7 +26,7 @@ JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_SGD_getVotesForSparseInstance
 /*
  * Class:     org_moa_gpu_SGD
  * Method:    trainNative
- * Signature: (Lorg/moa/gpu/bridge/NativeInstanceBatch;)V
+ * Signature: (Lorg/moa/gpu/bridge/NativeSparseInstanceBatch;)V
  */
 JNIEXPORT void JNICALL Java_org_moa_gpu_SGD_trainNative
   (JNIEnv *, jobject, jobject);
