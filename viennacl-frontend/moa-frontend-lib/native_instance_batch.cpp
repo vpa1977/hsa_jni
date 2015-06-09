@@ -1,16 +1,16 @@
 #include "library.hpp"
 #include "instance_interface.hpp"
 #include "native_instance_batch.hpp"
-#include "org_moa_gpu_bridge_NativeInstanceBatch.h"
+#include "org_moa_gpu_bridge_NativeSparseInstanceBatch.h"
 #include "viennacl/backend/mem_handle.hpp"
 
 
 
 void native_instance_batch::commit()
 {
-	std::vector<int> row_jumper;
+	static std::vector<int> row_jumper;
 	row_jumper.resize(m_num_rows+1);
-	std::vector<double> class_data;
+	static std::vector<double> class_data;
 	class_data.resize(m_num_rows);
 	// fill row jumper
 	int accumulator = 0;
@@ -23,9 +23,9 @@ void native_instance_batch::commit()
 	}
 	row_jumper.at(m_num_rows) = accumulator;
 
-	std::vector<int> column_data;
+	static std::vector<int> column_data;
 	column_data.resize( accumulator );
-	std::vector<double> element_data;
+	static std::vector<double> element_data;
 	element_data.resize( accumulator);
 	for (size_t i = 0; i < m_individual_instances.size() ; ++i)
 	{
@@ -62,14 +62,14 @@ void native_instance_batch::commit()
 
 
 /*
- * Class:     org_moa_gpu_bridge_NativeInstanceBatch
+ * Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
  * Method:    add
  * Signature: (Lorg/moa/gpu/bridge/NativeInstance;)V
  */
-JNIEXPORT jboolean JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_add(JNIEnv * env, jobject instance_batch, jobject native_instance)
+JNIEXPORT jboolean JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_add(JNIEnv * env, jobject instance_batch, jobject native_instance)
 {
 	jboolean full = 0;
-	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeInstanceBatch");
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	native_instance_batch* batch = (native_instance_batch*)env->GetLongField(instance_batch, _context_field);
 
@@ -84,27 +84,27 @@ JNIEXPORT jboolean JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_add(JNIEn
 }
 
 /*
- * Class:     org_moa_gpu_bridge_NativeInstanceBatch
+ * Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
  * Method:    clear
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_clear
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_clear
   (JNIEnv * env, jobject instance_batch)
 {
-	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeInstanceBatch");
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	native_instance_batch* batch = (native_instance_batch*)env->GetLongField(instance_batch, _context_field);
 	batch->clear();
 }
 
 /*
- * Class:     org_moa_gpu_bridge_NativeInstanceBatch
+ * Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
  * Method:    init
  * Signature: (Lweka/core/Instances;I)V
  */
-JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_init (JNIEnv * env, jobject instance_batch, jobject instances, jint num_rows)
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_init (JNIEnv * env, jobject instance_batch, jobject instances, jint num_rows)
 {
-	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeInstanceBatch");
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	dataset_interface dataset(env,instances);
 	native_instance_batch* batch = new native_instance_batch(num_rows, dataset.get_num_attributes()-1,get_global_context());
@@ -112,13 +112,13 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_init (JNIEnv 
 }
 
 /*
- * Class:     org_moa_gpu_bridge_NativeInstanceBatch
+ * Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
  * Method:    release
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeInstanceBatch_release(JNIEnv * env, jobject instance_batch)
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_release(JNIEnv * env, jobject instance_batch)
 {
-	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeInstanceBatch");
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	native_instance_batch* batch = (native_instance_batch*)env->GetLongField(instance_batch, _context_field);
 	delete batch;

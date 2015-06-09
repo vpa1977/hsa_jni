@@ -10,8 +10,8 @@ import weka.core.Instances;
  * @author bsp
  *
  */
-public class NativeInstanceBatch {
-	public NativeInstanceBatch(Instances dataset, int rows)
+public class NativeSparseInstanceBatch {
+	public NativeSparseInstanceBatch(Instances dataset, int rows)
 	{
 		m_list.ensureCapacity(rows);
 		init(dataset, rows);

@@ -2,7 +2,7 @@ package org.moa.gpu;
 
 import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeInstance;
-import org.moa.gpu.bridge.NativeInstanceBatch;
+import org.moa.gpu.bridge.NativeSparseInstanceBatch;
 import org.moa.gpu.bridge.NativeSparseInstance;
 import org.moa.gpu.util.DirectMemory;
 
@@ -23,7 +23,7 @@ import moa.options.MultiChoiceOption;
  */
 public class SGD extends AbstractClassifier implements NativeClassifier {
 	
-	private NativeInstanceBatch m_native_batch;
+	private NativeSparseInstanceBatch m_native_batch;
 	
 	
     /** The regularization parameter */
@@ -68,7 +68,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 	 * Train on the next batch
 	 * @param w
 	 */
-	private native void trainNative(NativeInstanceBatch w);
+	private native void trainNative(NativeSparseInstanceBatch w);
 	
 	
 	/** 
@@ -127,7 +127,7 @@ public class SGD extends AbstractClassifier implements NativeClassifier {
 		
 		if (m_native_batch == null)
 		{
-			m_native_batch = new NativeInstanceBatch(inst.dataset(), m_batch_size);
+			m_native_batch = new NativeSparseInstanceBatch(inst.dataset(), m_batch_size);
 		}
 		boolean full = m_native_batch.addInstance((NativeInstance) inst);
 		if (full)

@@ -4,7 +4,7 @@
  *  Created on: 27/04/2015
  *      Author: bsp
  */
-
+#include "library.hpp"
 #include "instance_interface.hpp"
 #include <assert.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 
 viennacl::vector<double> sparse_storage::vector(size_t size)
 {
-	viennacl::vector<double> data(size);
+	viennacl::vector<double> data(size, get_global_context());
 	std::vector<double> cpu_vec(size);
 	for (size_t i = 0 ;i < m_indices.size() ; ++i)
 		cpu_vec.at( m_indices.at(i)) = m_values.at(i);
@@ -37,11 +37,14 @@ instance_interface::instance_interface(JNIEnv* env, jobject inst) : env_(env), i
 	num_attributes_method_ = num_attributes_method;
 
 	static jclass sparse_instance_class = env->FindClass("org/moa/gpu/AccessibleSparseInstance");
+	static jclass dense_instance_class = env->FindClass("weka/core/DenseInstance");
 
 	static jmethodID get_indices_method = env->GetMethodID( sparse_instance_class,"getIndices", "()[I");
 	get_indices_method_ = get_indices_method;
 
 	static jmethodID get_values_method = env->GetMethodID( sparse_instance_class, "getValues", "()[D");
+	if (get_values_method == 0)
+		get_values_method = env->GetMethodID(dense_instance_class,"toDoubleArray", "()[D");
 	get_values_method_ = get_values_method;
 }
 
@@ -179,5 +182,70 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstance_init(JNIEnv 
 	env->SetLongField(native_sparse_instance,_context_field, (jlong)storage);
 	Java_org_moa_gpu_bridge_NativeSparseInstance_writeToNative(env, native_sparse_instance);
 }
+
+
+/*
+ * Class:     org_moa_gpu_bridge_NativeDenseInstance
+ * Method:    writeToNative
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstance_writeToNative
+  (JNIEnv * env, jobject obj)
+{
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstance");
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	static jfieldID _instance_field = env->GetFieldID(_class, "m_instance", "Lweka/core/DenseInstance;");
+	jobject instance = env->GetObjectField(obj,_instance_field);
+	dense_storage* storage = (dense_storage*)env->GetLongField(instance, _context_field);
+	instance_interface iface(env, instance);
+
+	int class_index = iface.get_class_index();
+	std::vector<double> values =iface.get_values();
+
+	// reserve memory
+	storage->m_values.reserve(values.size());
+
+	for (size_t i = 0 ; i < values.size();++i )
+	{
+		if (i == class_index)
+			storage->m_class_value = values.at(i);
+		else
+		{
+			storage->m_values.push_back(values.at(i));
+		}
+	}
+
+}
+
+/*
+ * Class:     org_moa_gpu_bridge_NativeDenseInstance
+ * Method:    release
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstance_release
+  (JNIEnv *env, jobject obj)
+{
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstance");
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	dense_storage* storage = (dense_storage*)env->GetLongField(obj, _context_field);
+	delete storage;
+}
+
+/*
+ * Class:     org_moa_gpu_bridge_NativeDenseInstance
+ * Method:    init
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstance_init
+  (JNIEnv* env, jobject obj)
+{
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstance");
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	dense_storage* storage = new dense_storage();
+	env->SetLongField(obj,_context_field, (jlong)storage);
+	Java_org_moa_gpu_bridge_NativeDenseInstance_writeToNative(env, obj);
+
+}
+
 
 

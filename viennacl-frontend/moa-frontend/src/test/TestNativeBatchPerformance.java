@@ -30,7 +30,7 @@ package test;
 
 
 import org.moa.gpu.bridge.NativeInstance;
-import org.moa.gpu.bridge.NativeInstanceBatch;
+import org.moa.gpu.bridge.NativeSparseInstanceBatch;
 
 import moa.classifiers.AbstractClassifier;
 import moa.classifiers.Regressor;
@@ -222,7 +222,7 @@ public class TestNativeBatchPerformance extends AbstractClassifier implements Re
     @Override
     public void trainOnInstanceImpl(Instance instance) {
     	if (m_native_batch == null)
-    		m_native_batch = new NativeInstanceBatch(instance.dataset(), 1024);
+    		m_native_batch = new NativeSparseInstanceBatch(instance.dataset(), 1024);
     	if (m_native_batch.addInstance((NativeInstance)instance))
     		m_native_batch.clearBatch();
     }
@@ -302,5 +302,5 @@ public class TestNativeBatchPerformance extends AbstractClassifier implements Re
         return false;
     }
     
-    private NativeInstanceBatch m_native_batch;
+    private NativeSparseInstanceBatch m_native_batch;
 }

@@ -10,6 +10,7 @@
 
 #include <jni.h>
 #include <org_moa_gpu_bridge_NativeSparseInstance.h>
+#include <org_moa_gpu_bridge_NativeDenseInstance.h>
 #include <vector>
 #include <viennacl/vector.hpp>
 
@@ -54,16 +55,17 @@ private:
 
 struct sparse_storage
 {
-
 	viennacl::vector<double> vector(size_t num_attributes);
-
 	double m_class_value;
 	std::vector<int> m_indices;
 	std::vector<double> m_values;
 };
 
-
-
+struct dense_storage
+{
+	double m_class_value;
+	std::vector<double> m_values;
+};
 
 
 

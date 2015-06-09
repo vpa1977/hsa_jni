@@ -1,10 +1,10 @@
 <Experiments>
 	<sgd>
-		<window>4</window>
+		<window>16384</window>
 		<test_size>100</test_size>
-		<train_size>100</train_size>
-		<!-- <generator>org.moa.gpu.NativeSparseInstanceStreamGenerator -m  -a 64 -b (moa.streams.generators.RandomTreeGenerator -u 16 -o 0)</generator> --> 
-		<generator>org.moa.gpu.NativeSparseInstanceStreamGenerator -m 1 -a 64 -b (test.ArffStreamGenerator)</generator>
+		<train_size>1000000</train_size>
+		 <generator>org.moa.gpu.NativeSparseInstanceStreamGenerator -m 16 -a 16384 -b (moa.streams.generators.RandomTreeGenerator -u 64 -o 0)</generator> 
+		<!--<generator>org.moa.gpu.NativeSparseInstanceStreamGenerator -m 1 -a 64 -b (test.ArffStreamGenerator)</generator> -->
 		<train_batch>2048</train_batch>
 		<test_batch>1</test_batch>
 	</sgd>

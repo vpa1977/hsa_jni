@@ -61,7 +61,7 @@ public class DualSGDTest {
 				
 				
 				SGD hsaSGD = new SGD();
-				
+				Object ret;
 				
 				//System.out.println("Test : window="+ window);
 				//System.out.println("     : test_batch="+ test_batch);
@@ -71,18 +71,20 @@ public class DualSGDTest {
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
 				
 				hsaSGD.learningBatchSize.setValue(window);
+				EvaluatePeriodicHeldOutTest test ;
+				if (false)
+				{
 				
-				
-				EvaluatePeriodicHeldOutTest test = new EvaluatePeriodicHeldOutTest();
+				test = new EvaluatePeriodicHeldOutTest();
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
 				test.testSizeOption.setValue(test_size);
 				test.trainSizeOption.setValue(train_size);
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				Object ret = test.doTask(new NullMonitor(),null);
+				 ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-				
+				}
 				test = new EvaluatePeriodicHeldOutTest();
 				test.learnerOption.setCurrentObject(moaSGD);
 				test.streamOption.setCurrentObject(generator);
