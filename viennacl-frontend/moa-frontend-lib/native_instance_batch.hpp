@@ -5,16 +5,18 @@
  *      Author: bsp
  */
 
-#ifndef NATIVE_INSTANCE_BATCH_HPP_
-#define NATIVE_INSTANCE_BATCH_HPP_
+#ifndef SPARSE_INSTANCE_BATCH_HPP_
+#define SPARSE_INSTANCE_BATCH_HPP_
 
 #include <viennacl/context.hpp>
+#include <viennacl/vector.hpp>
 #include <viennacl/compressed_matrix.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 
-
-struct native_instance_batch
+struct sparse_instance_batch
 {
-	native_instance_batch(size_t num_rows, size_t num_columns, viennacl::context& ctx ) :
+	sparse_instance_batch(size_t num_rows, size_t num_columns, viennacl::context& ctx ) :
 		m_num_rows(num_rows), m_num_columns(num_columns),
 		m_index(0), m_instance_values(num_rows, num_columns, ctx), m_class_values(num_rows, ctx)
 	{
@@ -50,5 +52,48 @@ struct native_instance_batch
 
 };
 
+struct dense_instance_batch
+{
+	dense_instance_batch(size_t num_rows, size_t num_columns, viennacl::context& ctx ) :
+		m_num_rows(num_rows), m_num_columns(num_columns),
+		m_index(0), m_instance_values(num_rows), m_class_values(num_rows), m_ctx(ctx)
+	{
+		clear();
+	}
 
-#endif /* NATIVE_INSTANCE_BATCH_HPP_ */
+	void clear()
+	{
+		m_class_values.clear();
+		m_class_values.resize(m_num_rows);
+		m_instance_values.reserve(m_num_rows);
+		m_index = 0;
+	}
+
+	bool add(dense_storage* ptr)
+	{
+		if (m_index < m_class_values.size())
+		{
+			m_class_values.at(m_index) = ptr->m_class_value;
+			m_instance_values.at(m_index) = ptr->m_values;
+			++m_index;
+		}
+		return m_index  == m_class_values.size();
+	}
+
+	void commit()
+	{
+
+	}
+
+
+	size_t m_num_rows;
+	size_t m_num_columns;
+	size_t m_index;
+	std::vector< viennacl::vector<double> > m_instance_values;
+	std::vector<double> m_class_values;
+	viennacl::context& m_ctx;
+
+};
+
+
+#endif /* SPARSE_INSTANCE_BATCH_HPP_ */

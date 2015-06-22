@@ -30,6 +30,7 @@ package test;
 
 
 import org.moa.gpu.bridge.NativeInstance;
+import org.moa.gpu.bridge.NativeInstanceBatch;
 import org.moa.gpu.bridge.NativeSparseInstanceBatch;
 
 import moa.classifiers.AbstractClassifier;
@@ -302,5 +303,5 @@ public class TestNativeBatchPerformance extends AbstractClassifier implements Re
         return false;
     }
     
-    private NativeSparseInstanceBatch m_native_batch;
+    private NativeInstanceBatch m_native_batch;
 }

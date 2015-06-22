@@ -15,6 +15,7 @@
 #include <viennacl/vector.hpp>
 
 
+
 class dataset_interface
 {
 	public:
@@ -40,12 +41,14 @@ public:
 	int get_num_attributes();
 	std::vector<int> get_indices();
 	std::vector<double> get_values();
+	std::vector<double> to_double_array();
 private:
 	JNIEnv* env_;
 	jobject instance_;
 private:
 	jmethodID get_indices_method_;
 	jmethodID get_values_method_;
+	jmethodID get_double_array_method_;
 	jmethodID get_method_;
 	jmethodID class_index_method_;
 	jmethodID is_missing_method_;
@@ -64,7 +67,7 @@ struct sparse_storage
 struct dense_storage
 {
 	double m_class_value;
-	std::vector<double> m_values;
+	viennacl::vector<double> m_values;
 };
 
 

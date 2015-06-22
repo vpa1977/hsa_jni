@@ -10,7 +10,7 @@ import weka.core.Instances;
  * @author bsp
  *
  */
-public class NativeSparseInstanceBatch {
+public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	public NativeSparseInstanceBatch(Instances dataset, int rows)
 	{
 		m_list.ensureCapacity(rows);
@@ -18,6 +18,11 @@ public class NativeSparseInstanceBatch {
 	}
 	
 	
+	
+	/* (non-Javadoc)
+	 * @see org.moa.gpu.bridge.NativeInstanceBatch#addInstance(org.moa.gpu.bridge.NativeInstance)
+	 */
+	@Override
 	public boolean addInstance(NativeInstance inst)
 	{
 		
@@ -28,6 +33,10 @@ public class NativeSparseInstanceBatch {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.moa.gpu.bridge.NativeInstanceBatch#clearBatch()
+	 */
+	@Override
 	public void clearBatch()
 	{
 		clear();
