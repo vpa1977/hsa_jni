@@ -3,6 +3,8 @@ package org.moa.gpu.bridge;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import org.moa.gpu.NativeSparseInstanceStreamGenerator;
+
 import weka.core.Instances;
 /** 
  * Java interface to the batch of instances. 
@@ -13,7 +15,6 @@ import weka.core.Instances;
 public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	public NativeSparseInstanceBatch(Instances dataset, int rows)
 	{
-		m_list.ensureCapacity(rows);
 		init(dataset, rows);
 	}
 	
@@ -25,10 +26,9 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	@Override
 	public boolean addInstance(NativeInstance inst)
 	{
-		
+		if (! (inst instanceof NativeSparseInstance))
+			throw new RuntimeException("Only NativeSparseInstance is supported");
 		boolean canAdd =  add(inst);
-		if (canAdd)
-			m_list.add(inst);
 		return canAdd;
 		
 	}
@@ -40,7 +40,6 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	public void clearBatch()
 	{
 		clear();
-		m_list.clear();
 	}
 	
 	private native boolean add(NativeInstance ins);
@@ -56,6 +55,4 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 		release();
 	}
 	private long m_native_context;
-	private ArrayList<NativeInstance> m_list = new ArrayList<NativeInstance>();
-	
 }

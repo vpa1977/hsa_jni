@@ -34,7 +34,8 @@ struct sparse_instance_batch
 	{
 		if (m_index < m_individual_instances.size())
 		{
-			m_individual_instances.at(m_index) = *ptr;
+			sparse_storage storage = *ptr;
+			m_individual_instances[m_index] = storage;
 			++m_index;
 		}
 		return m_index  == m_individual_instances.size();
@@ -56,7 +57,7 @@ struct dense_instance_batch
 {
 	dense_instance_batch(size_t num_rows, size_t num_columns, viennacl::context& ctx ) :
 		m_num_rows(num_rows), m_num_columns(num_columns),
-		m_index(0), m_instance_values(num_rows), m_class_values(num_rows), m_ctx(ctx)
+		m_index(0), m_instance_values(num_rows*num_columns), m_gpu_instance_values(num_rows*num_columns), m_class_values(num_rows), m_ctx(ctx)
 	{
 		clear();
 	}
@@ -74,7 +75,7 @@ struct dense_instance_batch
 		if (m_index < m_class_values.size())
 		{
 			m_class_values.at(m_index) = ptr->m_class_value;
-			m_instance_values.at(m_index) = ptr->m_values;
+			std::copy(ptr->m_values.begin(), ptr->m_values.end(), m_instance_values.begin() + m_num_columns*m_index); 
 			++m_index;
 		}
 		return m_index  == m_class_values.size();
@@ -82,15 +83,16 @@ struct dense_instance_batch
 
 	void commit()
 	{
-
+		viennacl::copy(m_instance_values, m_gpu_instance_values);
 	}
 
 
 	size_t m_num_rows;
 	size_t m_num_columns;
 	size_t m_index;
-	std::vector< viennacl::vector<double> > m_instance_values;
+	std::vector<double> m_instance_values;
 	std::vector<double> m_class_values;
+	viennacl::vector<double> m_gpu_instance_values;
 	viennacl::context& m_ctx;
 
 };

@@ -1,0 +1,11 @@
+<Experiments>
+	<sgd>
+		<window>128</window>
+		<test_size>100</test_size>
+		<train_size>1000000</train_size>
+<!--  	 <generator><org.moa.gpu.NativeDenseInstanceStreamGenerator -b ( org.moa.gpu.FastRandomTreeGenerator -u 16384 -o 0)></generator>  -->	 
+		<generator>org.moa.gpu.NativeSparseInstanceStreamGenerator -a 8192 -m 4 -b ( org.moa.gpu.FastRandomTreeGenerator -u 256 -o 0)</generator>
+		<train_batch>2048</train_batch>
+		<test_batch>1</test_batch>
+	</sgd>
+</Experiments>

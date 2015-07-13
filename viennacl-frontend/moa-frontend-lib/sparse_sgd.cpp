@@ -107,7 +107,8 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SparseSGD_trainNative
 	sparse_instance_batch* batch = (sparse_instance_batch*)env->GetLongField(instance_batch, _context_field);
 	batch->commit();
 	sgd_impl->train(batch->m_class_values, batch->m_instance_values);
-//	printf("done training\n");
+	get_global_context().opencl_context().get_queue().finish();
+
 
 
 }

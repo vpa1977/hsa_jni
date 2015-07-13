@@ -67,7 +67,7 @@ struct sparse_storage
 struct dense_storage
 {
 	double m_class_value;
-	viennacl::vector<double> m_values;
+	std::vector<double> m_values;
 };
 
 

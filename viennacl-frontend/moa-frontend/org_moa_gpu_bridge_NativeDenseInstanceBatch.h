@@ -7,10 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_moa_gpu_bridge_NativeDenseInstanceBatch_SLIDING_WINDOW
-#define org_moa_gpu_bridge_NativeDenseInstanceBatch_SLIDING_WINDOW 1L
-#undef org_moa_gpu_bridge_NativeDenseInstanceBatch_BUFFER
-#define org_moa_gpu_bridge_NativeDenseInstanceBatch_BUFFER 2L
 /*
  * Class:     org_moa_gpu_bridge_NativeDenseInstanceBatch
  * Method:    add
@@ -30,10 +26,10 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_clear
 /*
  * Class:     org_moa_gpu_bridge_NativeDenseInstanceBatch
  * Method:    init
- * Signature: (Lweka/core/Instances;II)V
+ * Signature: (Lweka/core/Instances;I)V
  */
 JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_init
-  (JNIEnv *, jobject, jobject, jint, jint);
+  (JNIEnv *, jobject, jobject, jint);
 
 /*
  * Class:     org_moa_gpu_bridge_NativeDenseInstanceBatch

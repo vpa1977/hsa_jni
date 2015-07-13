@@ -27,7 +27,7 @@ import com.nativelibs4java.opencl.CLContext;
 import com.nativelibs4java.opencl.CLDevice;
 import com.nativelibs4java.opencl.JavaCL;
 
-public class DualDenseSGDTest {
+public class DenseSGDTest {
 
 	/**
 	 * @param args
@@ -88,7 +88,7 @@ public class DualDenseSGDTest {
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
 				}
-				test = new EvaluatePeriodicHeldOutTest();
+			/*	test = new EvaluatePeriodicHeldOutTest();
 				test.learnerOption.setCurrentObject(moaSGD);
 				test.streamOption.setCurrentObject(generator);
 				test.testSizeOption.setValue(test_size);
@@ -97,7 +97,7 @@ public class DualDenseSGDTest {
 				ret = test.doTask(new ConsoleMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-
+			 */	
 			}
 			catch (Throwable t )
 			{

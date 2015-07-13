@@ -29,15 +29,16 @@ static viennacl::ml::dense_sgd* GetNativeImpl(JNIEnv* env, jobject instance)
 
 
 
-static jdoubleArray votesForInstance(JNIEnv* env, viennacl::vector<double>& instance, jobject sgd)
+static jdoubleArray votesForInstance(JNIEnv* env, std::vector<double>& instance, jobject sgd)
 {
 	viennacl::ml::dense_sgd * sgd_impl  = GetNativeImpl(env,sgd);
 
 	bool is_nominal_value = sgd_impl->is_nominal();
 	size_t result_size = is_nominal_value ? 2 : 1;
 	jdoubleArray d = env->NewDoubleArray(result_size);
-
-	std::vector<double> result = sgd_impl->get_votes_for_instance(instance);
+	viennacl::vector<double> gpu_copy(instance.size());
+	viennacl::copy(instance, gpu_copy);
+	std::vector<double> result = sgd_impl->get_votes_for_instance(gpu_copy);
 	assert(result.size() == result_size);
 	env->SetDoubleArrayRegion(d,0, result_size, &result[0]);
 	return d;
@@ -102,7 +103,7 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_DenseSGD_trainNative
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	dense_instance_batch* batch = (dense_instance_batch*)env->GetLongField(instance_batch, _context_field);
 	batch->commit();
-	sgd_impl->train(batch->m_class_values, batch->m_instance_values);
+	sgd_impl->train(batch->m_class_values, batch->m_gpu_instance_values);
 //	printf("done training\n");
 
 

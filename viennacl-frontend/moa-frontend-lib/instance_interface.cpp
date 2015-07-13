@@ -220,13 +220,9 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstance_writeToNative
 
 	int class_index = iface.get_class_index();
 	std::vector<double> values =iface.to_double_array();
-	viennacl::vector<double> without_class_viennacl(values.size() -1 , get_global_context());
 	storage->m_class_value = values.at(class_index);
 	values.erase(values.begin()+class_index);
-	viennacl::copy(values, without_class_viennacl);
-	storage->m_values = without_class_viennacl;
-
-
+	storage->m_values.swap(values);
 }
 
 /*
