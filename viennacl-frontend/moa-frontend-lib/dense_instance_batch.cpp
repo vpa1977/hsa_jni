@@ -43,6 +43,16 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_clear
 	batch->clear();
 }
 
+
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_commit
+(JNIEnv * env, jobject instance_batch)
+{
+	static jclass _class = env->FindClass(theClazz);
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	dense_instance_batch* batch = (dense_instance_batch*)env->GetLongField(instance_batch, _context_field);
+	batch->commit();
+}
+
 /*
  * Class:     org_moa_gpu_bridge_NativeDenseInstanceBatch
  * Method:    init

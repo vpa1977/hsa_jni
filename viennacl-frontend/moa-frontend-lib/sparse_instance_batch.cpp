@@ -8,9 +8,9 @@
 
 void sparse_instance_batch::commit()
 {
-	static std::vector<int> row_jumper;
+	std::vector<int> row_jumper;
 	row_jumper.resize(m_num_rows+1);
-	static std::vector<double> class_data;
+	std::vector<double> class_data;
 	class_data.resize(m_num_rows);
 	// fill row jumper
 	int accumulator = 0;
@@ -23,9 +23,9 @@ void sparse_instance_batch::commit()
 	}
 	row_jumper.at(m_num_rows) = accumulator;
 
-	static std::vector<int> column_data;
+	std::vector<int> column_data;
 	column_data.resize( accumulator );
-	static std::vector<double> element_data;
+	std::vector<double> element_data;
 	element_data.resize( accumulator);
 	for (size_t i = 0; i < m_individual_instances.size() ; ++i)
 	{
@@ -33,6 +33,7 @@ void sparse_instance_batch::commit()
 		std::copy(p_row.m_indices.begin(), p_row.m_indices.end(), column_data.begin() + row_jumper.at(i));
 		std::copy(p_row.m_values.begin(), p_row.m_values.end(), element_data.begin() + row_jumper.at(i));
 	}
+
 	m_instance_values.set((const void*)&row_jumper[0],(const void*)&column_data[0],(const double*) &element_data[0], m_num_rows, m_num_columns, element_data.size());
 
 #ifdef NATIVE_INSTANCE_VALIDATE_FILL
@@ -97,6 +98,20 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_clear
 	batch->clear();
 }
 
+
+/*
+* Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
+* Method:    clear
+* Signature: ()V
+*/
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeSparseInstanceBatch_commit
+(JNIEnv * env, jobject instance_batch)
+{
+	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
+	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
+	sparse_instance_batch* batch = (sparse_instance_batch*)env->GetLongField(instance_batch, _context_field);
+	batch->commit();
+}
 /*
  * Class:     org_moa_gpu_bridge_NativeSparseInstanceBatch
  * Method:    init

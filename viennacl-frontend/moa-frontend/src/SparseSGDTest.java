@@ -1,6 +1,8 @@
 
 
+import org.moa.gpu.ConsoleMonitor;
 import org.moa.gpu.Context;
+import org.moa.gpu.DenseSGD;
 import org.moa.gpu.SparseSGD;
 import org.moa.gpu.SimpleDirectMemoryBatchInstances;
 import org.moa.gpu.SimpleWindow;
@@ -26,9 +28,9 @@ import com.nativelibs4java.opencl.CLContext;
 import com.nativelibs4java.opencl.CLDevice;
 import com.nativelibs4java.opencl.JavaCL;
 
-public class DualSparseSGDTest {
+public class SparseSGDTest {
 
-	/**
+/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
@@ -58,12 +60,11 @@ public class DualSparseSGDTest {
 				int train_size = experiment.getTrainSize();
 				int test_size = experiment.getTestSize();
 				int train_batch = experiment.getTrainBatch();
-				
+				int test_batch = experiment.getTestBatch();
 				
 				
 				SparseSGD hsaSGD = new SparseSGD();
 				hsaSGD.learningRateOption.setValue(0.000001);
-				hsaSGD.learningBatchSize.setValue(train_batch);
 				Object ret;
 				
 				//System.out.println("Test : window="+ window);
@@ -73,14 +74,13 @@ public class DualSparseSGDTest {
 				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size + " train batch="+train_batch);
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
 				
-				
+				hsaSGD.learningBatchSize.setValue(train_batch);
 				EvaluateTrainSpeed test ;
-				if (true)
-				{
 				
 				test = new EvaluateTrainSpeed();
 				test.trainTimeOption.setValue(60);
-				test.sampleFrequencyOption.setValue(train_batch*2+1);
+				test.sampleFrequencyOption.setValue(train_batch*5+1);
+
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
 				test.testSizeOption.setValue(test_size);
@@ -89,19 +89,19 @@ public class DualSparseSGDTest {
 				 ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-				}
+				
 				test = new EvaluateTrainSpeed();
 				test.trainTimeOption.setValue(60);
-				test.sampleFrequencyOption.setValue(5000);
+				test.sampleFrequencyOption.setValue(1000);
 				test.learnerOption.setCurrentObject(moaSGD);
 				test.streamOption.setCurrentObject(generator);
 				test.testSizeOption.setValue(test_size);
 				test.trainSizeOption.setValue(train_size);
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				ret = test.doTask(new NullMonitor(),null);
+				ret = test.doTask(new ConsoleMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-
+				System.exit(0);
 			}
 			catch (Throwable t )
 			{

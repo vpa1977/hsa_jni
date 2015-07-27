@@ -1,18 +1,11 @@
 package org.moa.gpu.bridge;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import weka.core.Instances;
-/** 
- * Java interface to the batch of instances. 
- * The batch rows are updated in a circular fashion 
- * @author bsp
- *
- */
-public class NativeDenseInstanceBatch implements NativeInstanceBatch {
-	
-	public NativeDenseInstanceBatch(Instances dataset, int rows)
+
+public class NativeDenseWindow {
+	public NativeDenseWindow(Instances dataset, int rows)
 	{
 		create(dataset,rows);
 	}
@@ -54,5 +47,4 @@ public class NativeDenseInstanceBatch implements NativeInstanceBatch {
 	}
 	private long m_native_context;
 	private ArrayList<NativeInstance> m_list = new ArrayList<NativeInstance>();
-	
 }

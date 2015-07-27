@@ -131,7 +131,7 @@ public class NativeSparseInstanceStreamGenerator extends AbstractOptionHandler i
 			
 			attr_map.put(class_index,class_index);
 			info.set(class_index, (Attribute)base_header.attribute(class_index).copy());
-			printAttributeMap(attr_map, class_index);
+		//	printAttributeMap(attr_map, class_index);
 			m_mapping.add( attr_map );
 		}
 		

@@ -13,6 +13,7 @@
  //viennacl::context g_context(viennacl::MAIN_MEMORY);// =   viennacl::ocl::current_context();
 
 
+
 viennacl::context& get_global_context()
 {
 	//static viennacl::context g_context(viennacl::MAIN_MEMORY);
@@ -22,6 +23,9 @@ viennacl::context& get_global_context()
 	{
 		viennacl::ocl::context* ctx = g_context.opencl_pcontext();
 		ctx->build_options("-cl-std=CL2.0 -D CL_VERSION_2_0");
+		ctx->add_queue(ctx->current_device()); // 1 - data transfer queue
+		ctx->add_device_queue(ctx->current_device().id());
+		init = true;
 	}
 	return g_context;
 }
@@ -68,3 +72,25 @@ void fill_dense(viennacl::vector<double>& vcl_vector, jlong values, jlong total_
 }
 
 
+
+cl_mem write_with_data_queue(void* source, size_t len)
+{
+	cl_int err;
+	cl_context ctx= get_global_context().opencl_pcontext()->handle().get();
+	cl_mem memory = clCreateBuffer(ctx, CL_MEM_READ_WRITE, len,NULL, &err);
+	VIENNACL_ERR_CHECK(err);
+	cl_command_queue queue = get_global_context().opencl_pcontext()->get_queue(get_global_context().opencl_pcontext()->current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
+	err = clEnqueueWriteBuffer(queue, memory, true, 0, len, source, 0, NULL, NULL);
+	VIENNACL_ERR_CHECK(err);
+	return memory;
+}
+
+void write_with_data_queue(cl_mem dst, void* source, size_t len)
+{
+	cl_int err;
+	cl_context ctx = get_global_context().opencl_pcontext()->handle().get();
+	
+	cl_command_queue queue = get_global_context().opencl_pcontext()->get_queue(get_global_context().opencl_pcontext()->current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
+	err = clEnqueueWriteBuffer(queue, dst, true, 0, len, source, 0, NULL, NULL);
+	VIENNACL_ERR_CHECK(err);
+}

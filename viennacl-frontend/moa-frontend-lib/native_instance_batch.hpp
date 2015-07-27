@@ -83,7 +83,10 @@ struct dense_instance_batch
 
 	void commit()
 	{
-		viennacl::copy(m_instance_values, m_gpu_instance_values);
+		if (m_gpu_instance_values.handle().get_active_handle_id() == viennacl::OPENCL_MEMORY)
+			write_with_data_queue(m_gpu_instance_values.handle().opencl_handle().get(), &m_instance_values[0], m_instance_values.size() * sizeof(m_instance_values[0]));
+		else
+			viennacl::copy(m_instance_values, m_gpu_instance_values);
 	}
 
 

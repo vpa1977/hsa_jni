@@ -9,6 +9,7 @@
 #define KNN_SLIDING_WINDOW_HPP_
 
 #include <viennacl/vector.hpp>
+#include <viennacl/matrix.hpp>
 
 /**
  * This is a backing for the dense sliding window.

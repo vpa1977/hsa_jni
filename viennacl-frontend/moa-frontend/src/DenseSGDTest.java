@@ -7,6 +7,7 @@ import org.moa.gpu.SparseSGD;
 import org.moa.gpu.SimpleDirectMemoryBatchInstances;
 import org.moa.gpu.SimpleWindow;
 import org.moa.gpu.config.*;
+import org.moa.gpu.util.EvaluateTrainSpeed;
 
 import java.io.FileInputStream;
 import java.util.List;
@@ -29,7 +30,7 @@ import com.nativelibs4java.opencl.JavaCL;
 
 public class DenseSGDTest {
 
-	/**
+/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
@@ -55,11 +56,11 @@ public class DenseSGDTest {
 				InstanceStream generator = (InstanceStream)ClassOption.cliStringToObject(generatorCLI,InstanceStream.class, null );
 				
 				
-				int window = experiment.getWindow();
+				
 				int train_size = experiment.getTrainSize();
 				int test_size = experiment.getTestSize();
-				int train_batch = experiment.getTestBatch();
-				int test_batch = experiment.getTrainBatch();
+				int train_batch = experiment.getTrainBatch();
+				int test_batch = experiment.getTestBatch();
 				
 				
 				DenseSGD hsaSGD = new DenseSGD();
@@ -70,25 +71,28 @@ public class DenseSGDTest {
 				//System.out.println("     : test_batch="+ test_batch);
 				//System.out.println("     : train_batch="+ train_batch);
 				
-				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size + " train batch="+window);
+				System.out.println("	 : test_size="+ test_size + " train_size =" + train_size + " train batch="+train_batch);
 				System.out.println("Stream: "+ ((AbstractOptionHandler)generator).getCLICreationString(InstanceStream.class));// + " "+ generator.getOptions().getAsCLIString());
 				
-				hsaSGD.learningBatchSize.setValue(window);
-				EvaluatePeriodicHeldOutTest test ;
-				if (true)
-				{
+				hsaSGD.learningBatchSize.setValue(train_batch);
+				EvaluateTrainSpeed test ;
 				
-				test = new EvaluatePeriodicHeldOutTest();
+				test = new EvaluateTrainSpeed();
+				test.trainTimeOption.setValue(60);
+				test.sampleFrequencyOption.setValue(train_batch*5+1);
+
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
 				test.testSizeOption.setValue(test_size);
 				test.trainSizeOption.setValue(train_size);
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				 ret = test.doTask(new ConsoleMonitor(),null);
+				 ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-				}
-			/*	test = new EvaluatePeriodicHeldOutTest();
+				
+				test = new EvaluateTrainSpeed();
+				test.trainTimeOption.setValue(60);
+				test.sampleFrequencyOption.setValue(1000);
 				test.learnerOption.setCurrentObject(moaSGD);
 				test.streamOption.setCurrentObject(generator);
 				test.testSizeOption.setValue(test_size);
@@ -97,7 +101,7 @@ public class DenseSGDTest {
 				ret = test.doTask(new ConsoleMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-			 */	
+				System.exit(0);
 			}
 			catch (Throwable t )
 			{

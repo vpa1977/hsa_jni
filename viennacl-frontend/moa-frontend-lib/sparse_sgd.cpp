@@ -105,11 +105,8 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SparseSGD_trainNative
 	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeSparseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	sparse_instance_batch* batch = (sparse_instance_batch*)env->GetLongField(instance_batch, _context_field);
-	batch->commit();
 	sgd_impl->train(batch->m_class_values, batch->m_instance_values);
 	get_global_context().opencl_context().get_queue().finish();
-
-
 
 }
 

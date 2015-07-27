@@ -1,22 +1,22 @@
 package org.moa.gpu;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeInstance;
 import org.moa.gpu.bridge.NativeInstanceBatch;
-import org.moa.gpu.bridge.NativeSparseInstanceBatch;
 import org.moa.gpu.bridge.NativeSparseInstance;
-import org.moa.gpu.util.DirectMemory;
+import org.moa.gpu.bridge.NativeSparseInstanceBatch;
 
-import weka.core.DenseInstance;
-import weka.core.Instance;
-import weka.core.SparseInstance;
 import moa.classifiers.AbstractClassifier;
-import moa.core.DoubleVector;
 import moa.core.Measurement;
-import moa.options.ClassOption;
 import moa.options.FloatOption;
 import moa.options.IntOption;
 import moa.options.MultiChoiceOption;
+import weka.core.Instance;
 
 /** 
  * SGD implementation backed by the native library.
@@ -24,6 +24,10 @@ import moa.options.MultiChoiceOption;
  *
  */
 public class SparseSGD extends AbstractClassifier implements NativeClassifier {
+	
+	private static final int QUEUE_SIZE = 10;
+	private ThreadPoolExecutor m_copy_thread;
+	private ThreadPoolExecutor m_train_thread;
 	
 	private NativeInstanceBatch m_native_batch;
 	
@@ -88,7 +92,13 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 	 */
 	private native void dispose(); 
 	
-	protected void finalize() throws Throwable { dispose(); };
+	protected void finalize() throws Throwable {
+		m_copy_thread.shutdown();
+		m_train_thread.shutdown();
+
+		dispose();
+		
+		};
 	
 	
 	
@@ -101,9 +111,20 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public double[] getVotesForInstance(Instance inst) {
+		try {
+			m_copy_thread.submit(() -> {}).get();
+			m_train_thread.submit(() -> {}).get();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (inst instanceof NativeSparseInstance)
 			return getVotesForSparseInstance((NativeSparseInstance)inst);
 		throw new RuntimeException("Unsupported instance type");
+		
 	}
 
 	
@@ -124,8 +145,11 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 		
 		if (!m_native_init)
 		{
+			m_copy_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
+			m_train_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
 			initNative(inst.numAttributes() -1, m_batch_size,m_loss,   inst.classAttribute().isNominal(), m_learning_rate, m_lambda);
 			m_native_init = true;
+			
 		}
 		
 		if (m_native_batch == null)
@@ -135,8 +159,13 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 		boolean full = m_native_batch.addInstance((NativeInstance) inst);
 		if (full)
 		{
-			trainNative(m_native_batch);
-			m_native_batch.clearBatch();
+			final NativeInstanceBatch batch = m_native_batch;
+			m_copy_thread.submit(() -> {
+				batch.commit();
+				m_train_thread.submit(() -> {trainNative(batch); });
+			});
+			
+			m_native_batch = new NativeSparseInstanceBatch(inst.dataset(), m_batch_size);
 			m_native_batch.addInstance((NativeInstance) inst);
 		}
 	}

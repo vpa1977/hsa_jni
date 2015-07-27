@@ -39,6 +39,14 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_init
 JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_release
   (JNIEnv *, jobject);
 
+/*
+ * Class:     org_moa_gpu_bridge_NativeDenseInstanceBatch
+ * Method:    commit
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstanceBatch_commit
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

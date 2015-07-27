@@ -9,6 +9,8 @@ extern "C" {
 #endif
 #undef org_moa_gpu_SparseSGD_serialVersionUID
 #define org_moa_gpu_SparseSGD_serialVersionUID 1i64
+#undef org_moa_gpu_SparseSGD_QUEUE_SIZE
+#define org_moa_gpu_SparseSGD_QUEUE_SIZE 10L
 #undef org_moa_gpu_SparseSGD_HINGE
 #define org_moa_gpu_SparseSGD_HINGE 0L
 #undef org_moa_gpu_SparseSGD_LOGLOSS

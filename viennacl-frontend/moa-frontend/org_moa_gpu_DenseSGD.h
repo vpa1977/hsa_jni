@@ -9,6 +9,8 @@ extern "C" {
 #endif
 #undef org_moa_gpu_DenseSGD_serialVersionUID
 #define org_moa_gpu_DenseSGD_serialVersionUID 1i64
+#undef org_moa_gpu_DenseSGD_QUEUE_SIZE
+#define org_moa_gpu_DenseSGD_QUEUE_SIZE 10L
 #undef org_moa_gpu_DenseSGD_HINGE
 #define org_moa_gpu_DenseSGD_HINGE 0L
 #undef org_moa_gpu_DenseSGD_LOGLOSS

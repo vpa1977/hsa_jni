@@ -9,6 +9,7 @@ import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeInstance;
 import org.moa.gpu.bridge.NativeInstanceBatch;
 import org.moa.gpu.bridge.NativeDenseInstanceBatch;
+import org.moa.gpu.bridge.NativeDenseWindow;
 import org.moa.gpu.bridge.NativeDenseInstance;
 import org.moa.gpu.util.DirectMemory;
 
@@ -28,46 +29,15 @@ import moa.options.MultiChoiceOption;
  * @author bsp
  *
  */
-public class DenseSGD extends AbstractClassifier implements NativeClassifier {
+public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
 	
-	private NativeInstanceBatch m_native_batch;
+	private NativeDenseWindow m_native_batch;
 	private static final int QUEUE_SIZE = 10;
 	private ThreadPoolExecutor m_copy_thread;
 	private ThreadPoolExecutor m_train_thread;
 
-	
-    /** The regularization parameter */
-    protected double m_lambda = 0.0001;
-
-    public FloatOption lambdaRegularizationOption = new FloatOption("lambdaRegularization",
-            'l', "Lambda regularization parameter .",
-            0.0001, 0.00, Integer.MAX_VALUE);
-
-    public FloatOption learningRateOption = new FloatOption("learningRate",
-            'r', "Learning rate parameter.",
-            0.0001, 0.00, Integer.MAX_VALUE);
+    public IntOption slidingWindowSize = new IntOption("slidingWindowSize", 'b', "Sliding Window Size", 1024, 2, Integer.MAX_VALUE);
     
-    public MultiChoiceOption lossFunctionOption = new MultiChoiceOption(
-            "lossFunction", 'o', "The loss function to use.", new String[]{
-                "HINGE", "LOGLOSS", "SQUAREDLOSS"}, new String[]{
-                "Hinge loss (SVM)",
-                "Log loss (logistic regression)",
-                "Squared loss (regression)"}, 0);
-    
-    
-    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 1024, 2, Integer.MAX_VALUE);
-    
-
-    protected static final int HINGE = 0;
-
-    protected static final int LOGLOSS = 1;
-
-    protected static final int SQUAREDLOSS = 2;
-
-    /** The current loss function to minimize */
-    protected int m_loss = HINGE;
-
-	protected double m_learning_rate = 0.0001;
 	private int m_batch_size;
 	private boolean m_native_init = false;
 
@@ -79,7 +49,7 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 	 * Train on the next batch
 	 * @param w
 	 */
-	private native void trainNative(NativeInstanceBatch w);
+	private native void trainNative(NativeDenseWindow w);
 	
 	
 	/** 
@@ -90,7 +60,7 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 	 * @param loss
 	 * @param nominal
 	 */
-	private native void initNative(int num_attr, int batch_size, int loss, boolean nominal, double learning_rate, double lambda);
+	private native void initNative(int num_attr, int batch_size);
 	/** 
 	 * dispose native context and all natively allocated structures
 	 */
@@ -135,10 +105,7 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public void resetLearningImpl() {
-        m_lambda = this.lambdaRegularizationOption.getValue();
-        m_learning_rate = this.learningRateOption.getValue();
-        m_loss = this.lossFunctionOption.getChosenIndex();
-        m_batch_size = learningBatchSize.getValue();
+        m_batch_size = slidingWindowSize.getValue();
         m_native_batch = null;
 	}
 
@@ -151,25 +118,25 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 		{
 			m_copy_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
 			m_train_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
-			initNative(inst.numAttributes() -1, m_batch_size,m_loss,   inst.classAttribute().isNominal(), m_learning_rate, m_lambda);
+			initNative(inst.numAttributes() -1, m_batch_size);
 			m_native_init = true;
 		}
 		
 		if (m_native_batch == null)
 		{
-			m_native_batch = new NativeDenseInstanceBatch(inst.dataset(), m_batch_size);
+			m_native_batch = new NativeDenseWindow(inst.dataset(), m_batch_size);
 		}
 		boolean full = m_native_batch.addInstance((NativeInstance) inst);
 		if (full)
 		{
-			final NativeInstanceBatch batch = m_native_batch;
+			final NativeDenseWindow batch = m_native_batch;
 			m_copy_thread.submit( () -> 
 			{
 				batch.commit();
 				m_train_thread.submit( () -> {trainNative(batch);});
 			}
 			);
-			m_native_batch =  new NativeDenseInstanceBatch(inst.dataset(), m_batch_size);
+			m_native_batch =  new NativeDenseWindow(inst.dataset(), m_batch_size);
 			m_native_batch.addInstance((NativeInstance) inst);
 		}
 	}
@@ -182,7 +149,7 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public void getModelDescription(StringBuilder out, int indent) {
-		out.append("SGD implementation backed by viennacl ");
+		out.append("Naive KNN implementation backed by viennacl ");
 	}
 	  
 	private long m_native_context; 

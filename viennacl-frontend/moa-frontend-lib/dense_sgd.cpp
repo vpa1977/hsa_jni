@@ -102,7 +102,6 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_DenseSGD_trainNative
 	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	dense_instance_batch* batch = (dense_instance_batch*)env->GetLongField(instance_batch, _context_field);
-	batch->commit();
 	sgd_impl->train(batch->m_class_values, batch->m_gpu_instance_values);
 //	printf("done training\n");
 

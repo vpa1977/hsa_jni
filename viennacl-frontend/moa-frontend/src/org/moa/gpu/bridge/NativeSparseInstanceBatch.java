@@ -46,12 +46,13 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	private native void clear();
 	private native void init(Instances dataset, int rows);
 	private native void release();
-	
+	public native void commit();
 	
 	@Override
 	protected void finalize() throws Throwable {
 		// TODO Auto-generated method stub
 		super.finalize();
+		clear();
 		release();
 	}
 	private long m_native_context;
