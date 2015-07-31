@@ -24,33 +24,16 @@ public class DirectMemory {
 		
 	}
 	
-	public static void write(long handle, int index, double value)
+	public static void write(long handle, double value)
 	{
-		m_direct_memory.putDouble(handle +index(DOUBLE_SIZE, index), value);
+		m_direct_memory.putDouble(handle, value);
 	}
 	
-	public static long read(long handle, int index)
+	public static double read(long handle)
 	{
-		return m_direct_memory.getLong(handle + index(LONG_SIZE, index));
+		return m_direct_memory.getDouble(handle);
 	}
 	
-	public static void write(long handle, int index, long value)
-	{
-		m_direct_memory.putLong(handle + index(LONG_SIZE, index), value);
-	}
-	
-	/*
-	 * public static void write(long handle, int index, int value)
-	
-	{
-		m_direct_memory.putLong(handle + index(INT_SIZE, index), value);
-	}*/
-
-	
-	private static long index(long size_in_bytes, int index)
-	{
-		return size_in_bytes * index;
-	}
 	
 	public static long DOUBLE_SIZE = 8; // todo fix in native code.
 	public static long INT_SIZE = 4; // todo fix in native code.

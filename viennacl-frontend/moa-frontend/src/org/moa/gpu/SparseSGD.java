@@ -162,7 +162,7 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 			final NativeInstanceBatch batch = m_native_batch;
 			m_copy_thread.submit(() -> {
 				batch.commit();
-				m_train_thread.submit(() -> {trainNative(batch); });
+				m_train_thread.submit(() -> {trainNative(batch);batch.release(); });
 			});
 			
 			m_native_batch = new NativeSparseInstanceBatch(inst.dataset(), m_batch_size);

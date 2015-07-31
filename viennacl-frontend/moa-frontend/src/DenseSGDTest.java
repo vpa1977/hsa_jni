@@ -4,7 +4,7 @@ import org.moa.gpu.ConsoleMonitor;
 import org.moa.gpu.Context;
 import org.moa.gpu.DenseSGD;
 import org.moa.gpu.SparseSGD;
-import org.moa.gpu.SimpleDirectMemoryBatchInstances;
+
 import org.moa.gpu.SimpleWindow;
 import org.moa.gpu.config.*;
 import org.moa.gpu.util.EvaluateTrainSpeed;
@@ -90,7 +90,7 @@ public class DenseSGDTest {
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
 				
-				test = new EvaluateTrainSpeed();
+			/*	test = new EvaluateTrainSpeed();
 				test.trainTimeOption.setValue(60);
 				test.sampleFrequencyOption.setValue(1000);
 				test.learnerOption.setCurrentObject(moaSGD);
@@ -101,6 +101,7 @@ public class DenseSGDTest {
 				ret = test.doTask(new ConsoleMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
+				*/
 				System.exit(0);
 			}
 			catch (Throwable t )

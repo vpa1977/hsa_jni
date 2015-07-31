@@ -55,7 +55,7 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
                 "Squared loss (regression)"}, 0);
     
     
-    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 1024, 2, Integer.MAX_VALUE);
+    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 256, 1, Integer.MAX_VALUE);
     
 
     protected static final int HINGE = 0;
@@ -163,14 +163,17 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 		if (full)
 		{
 			final NativeInstanceBatch batch = m_native_batch;
+			//batch.commit();
+			//trainNative(batch);
+			//batch.release();
+			
 			m_copy_thread.submit( () -> 
 			{
 				batch.commit();
-				m_train_thread.submit( () -> {trainNative(batch);});
+				m_train_thread.submit( () -> {trainNative(batch); batch.release(); });
 			}
 			);
 			m_native_batch =  new NativeDenseInstanceBatch(inst.dataset(), m_batch_size);
-			m_native_batch.addInstance((NativeInstance) inst);
 		}
 	}
 

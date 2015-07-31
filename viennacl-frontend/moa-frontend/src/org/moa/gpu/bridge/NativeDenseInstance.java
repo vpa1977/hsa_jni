@@ -313,7 +313,7 @@ public class NativeDenseInstance implements NativeInstance {
 	}
 
 	private native void writeToNative();
-	private native void release();
+	public native void release();
 	private native void init();
 	
 	private long m_native_context;

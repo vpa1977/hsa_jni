@@ -2,7 +2,7 @@
 
 import org.moa.gpu.Context;
 import org.moa.gpu.SparseSGD;
-import org.moa.gpu.SimpleDirectMemoryBatchInstances;
+
 import org.moa.gpu.SimpleWindow;
 import org.moa.gpu.config.*;
 import org.moa.gpu.util.EvaluateTrainSpeed;

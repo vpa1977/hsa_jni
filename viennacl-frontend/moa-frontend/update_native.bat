@@ -9,6 +9,7 @@ javah org.moa.gpu.bridge.NativeSparseInstance
 javah org.moa.gpu.bridge.NativeDenseInstance
 javah org.moa.gpu.bridge.NativeDenseInstanceBatch
 javah org.moa.gpu.bridge.NativeInstance
+javah org.moa.gpu.bridge.DenseOffHeapBuffer
 
 javah org.moa.gpu.bridge.NativeDenseWindow
 javah org.moa.gpu.NaiveKnn

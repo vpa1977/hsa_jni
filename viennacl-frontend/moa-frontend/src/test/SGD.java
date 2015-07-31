@@ -380,4 +380,13 @@ public class SGD extends AbstractClassifier implements Regressor{
     public boolean isRandomizable() {
         return false;
     }
+
+	public void printWeights() {
+		System.out.print("moa.SGD ");
+		for (double d : m_weights.getArrayCopy())
+			System.out.print(" " + d);
+		System.out.println();
+			
+		
+	}
 }

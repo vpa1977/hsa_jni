@@ -45,7 +45,7 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	private native boolean add(NativeInstance ins);
 	private native void clear();
 	private native void init(Instances dataset, int rows);
-	private native void release();
+	public native void release();
 	public native void commit();
 	
 	@Override
@@ -53,7 +53,6 @@ public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 		// TODO Auto-generated method stub
 		super.finalize();
 		clear();
-		release();
 	}
 	private long m_native_context;
 }

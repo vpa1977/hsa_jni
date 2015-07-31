@@ -10,4 +10,6 @@ public interface NativeInstanceBatch {
 	
 	public abstract void commit();
 
+	public abstract void release();
+
 }

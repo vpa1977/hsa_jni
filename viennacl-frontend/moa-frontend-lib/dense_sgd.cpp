@@ -38,6 +38,9 @@ static jdoubleArray votesForInstance(JNIEnv* env, std::vector<double>& instance,
 	jdoubleArray d = env->NewDoubleArray(result_size);
 	viennacl::vector<double> gpu_copy(instance.size());
 	viennacl::copy(instance, gpu_copy);
+#ifdef VIENNACL_DEBUG_ML
+	sgd_impl->print_weights();
+#endif
 	std::vector<double> result = sgd_impl->get_votes_for_instance(gpu_copy);
 	assert(result.size() == result_size);
 	env->SetDoubleArrayRegion(d,0, result_size, &result[0]);
@@ -102,6 +105,12 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_DenseSGD_trainNative
 	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstanceBatch");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	dense_instance_batch* batch = (dense_instance_batch*)env->GetLongField(instance_batch, _context_field);
+#ifdef VIENNACL_DEBUG_ML
+	std::cout << "train run for ";
+	for (int i = 0; i < batch->m_gpu_instance_values.size(); ++i)
+		std::cout << " " <<  batch->m_gpu_instance_values(i);
+	std::cout << std::endl;
+#endif 
 	sgd_impl->train(batch->m_class_values, batch->m_gpu_instance_values);
 //	printf("done training\n");
 

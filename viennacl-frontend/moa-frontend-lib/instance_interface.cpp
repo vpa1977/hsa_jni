@@ -236,7 +236,8 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_NativeDenseInstance_release
 	static jclass _class = env->FindClass("org/moa/gpu/bridge/NativeDenseInstance");
 	static jfieldID _context_field = env->GetFieldID(_class, "m_native_context", "J");
 	dense_storage* storage = (dense_storage*)env->GetLongField(obj, _context_field);
-	delete storage;
+	if (storage) delete storage;
+	env->SetLongField(obj, _context_field, 0);
 }
 
 /*

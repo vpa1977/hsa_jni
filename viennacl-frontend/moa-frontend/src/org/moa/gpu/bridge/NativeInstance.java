@@ -15,5 +15,5 @@ import weka.core.Instance;
  *
  */
 public interface NativeInstance extends Instance {
-
+	void release();
 }

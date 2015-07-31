@@ -43,15 +43,9 @@ public class NativeDenseInstanceBatch implements NativeInstanceBatch {
 	private native boolean add(NativeInstance ins);
 	private native void clear();
 	private native void init(Instances dataset, int rows);
-	private native void release();
+	public native void release();
 	public native void commit();
 	
-	@Override
-	protected void finalize() throws Throwable {
-		// TODO Auto-generated method stub
-		super.finalize();
-		release();
-	}
 	private long m_native_context;
 	private ArrayList<NativeInstance> m_list = new ArrayList<NativeInstance>();
 	
