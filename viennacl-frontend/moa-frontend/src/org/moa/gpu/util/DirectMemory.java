@@ -34,6 +34,14 @@ public class DirectMemory {
 		return m_direct_memory.getDouble(handle);
 	}
 	
+	public static void writeInt(long handle, int value) {
+		m_direct_memory.putInt(handle, value);
+	}
+	
+	public static int readInt(long handle)
+	{
+		return m_direct_memory.getInt(handle);
+	}
 	
 	public static long DOUBLE_SIZE = 8; // todo fix in native code.
 	public static long INT_SIZE = 4; // todo fix in native code.
@@ -50,5 +58,11 @@ public class DirectMemory {
 		catch (Throwable t){}
 		return null;
 	}
+
+	public static void writeLong(long l, long data) {
+		m_direct_memory.putLong(l,  data);
+		
+	}
+
 
 }

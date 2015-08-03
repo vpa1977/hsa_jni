@@ -78,30 +78,29 @@ public class DenseSGDTest {
 				EvaluateTrainSpeed test ;
 				
 				test = new EvaluateTrainSpeed();
-				test.trainTimeOption.setValue(60);
-				test.sampleFrequencyOption.setValue(train_batch*5+1);
-
+				test.trainSizeOption.setValue(0);
+				test.trainTimeOption.setValue(120);
+				test.sampleFrequencyOption.setValue(train_batch*5);
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
-				test.testSizeOption.setValue(test_size);
-				test.trainSizeOption.setValue(train_size);
+				
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
 				 ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
 				
-			/*	test = new EvaluateTrainSpeed();
-				test.trainTimeOption.setValue(60);
-				test.sampleFrequencyOption.setValue(1000);
-				test.learnerOption.setCurrentObject(moaSGD);
+				test = new EvaluateTrainSpeed();
+				test.trainSizeOption.setValue(0);
+				test.trainTimeOption.setValue(120);
+				test.sampleFrequencyOption.setValue(train_batch*5+1);
 				test.streamOption.setCurrentObject(generator);
-				test.testSizeOption.setValue(test_size);
-				test.trainSizeOption.setValue(train_size);
+				test.learnerOption.setCurrentObject(moaSGD);
+				
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
-				ret = test.doTask(new ConsoleMonitor(),null);
+				ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-				*/
+			
 				System.exit(0);
 			}
 			catch (Throwable t )

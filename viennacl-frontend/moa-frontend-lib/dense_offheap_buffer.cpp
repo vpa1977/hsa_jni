@@ -5,6 +5,8 @@
 #include "library.hpp"
 #include "org_moa_gpu_bridge_DenseOffHeapBuffer.h"
 
+#include "offheap_helpers.hpp"
+
 const char* const DENSE_OFFHEAP_BUFFER = "org/moa/gpu/bridge/DenseOffHeapBuffer";
 
 /*
@@ -80,5 +82,4 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_commit
 	err = clEnqueueSVMUnmap(queue, class_ptr, 0, 0, NULL);
 	VIENNACL_ERR_CHECK(err);
 	clFinish(queue);
-
 }

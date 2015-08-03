@@ -22,6 +22,7 @@ viennacl::context& get_global_context()
 	if (!init)
 	{
 		viennacl::ocl::context* ctx = g_context.opencl_pcontext();
+		std::cout << "Using device " << ctx->current_device().name() << std::endl;
 		ctx->build_options("-cl-std=CL2.0 -D CL_VERSION_2_0");
 		ctx->add_queue(ctx->current_device()); // 1 - data transfer queue
 		ctx->add_device_queue(ctx->current_device().id());

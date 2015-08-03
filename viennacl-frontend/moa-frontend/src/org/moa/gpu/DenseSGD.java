@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.moa.gpu.bridge.DenseOffHeapBuffer;
 import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeInstance;
 import org.moa.gpu.bridge.NativeInstanceBatch;
@@ -30,7 +31,7 @@ import moa.options.MultiChoiceOption;
  */
 public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 	
-	private NativeInstanceBatch m_native_batch;
+	private DenseOffHeapBuffer m_native_batch;
 	private static final int QUEUE_SIZE = 10;
 	private ThreadPoolExecutor m_copy_thread;
 	private ThreadPoolExecutor m_train_thread;
@@ -70,16 +71,17 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 	protected double m_learning_rate = 0.0001;
 	private int m_batch_size;
 	private boolean m_native_init = false;
+	private int m_row;
 
 	
-	private native double[] getVotesForDenseInstance(NativeDenseInstance inst );
+	private native double[] getVotesForDenseInstance(DenseOffHeapBuffer inst );
 	
 	
 	/** 
 	 * Train on the next batch
 	 * @param w
 	 */
-	private native void trainNative(NativeInstanceBatch w);
+	private native void trainNative(DenseOffHeapBuffer w);
 	
 	
 	/** 
@@ -126,9 +128,13 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 		}
 		if (inst == null)
 			return null;
-		if (inst instanceof NativeDenseInstance)
-			return getVotesForDenseInstance((NativeDenseInstance)inst);
-		throw new RuntimeException("Unsupported instance type");
+		DenseOffHeapBuffer buffer = new DenseOffHeapBuffer(1,  inst.numAttributes()-1);
+		buffer.begin();
+		buffer.set(inst, 0);
+		buffer.commit();
+		double[] res =  getVotesForDenseInstance(buffer);
+		buffer.release();
+		return res;
 	}
 
 	
@@ -144,9 +150,6 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public void trainOnInstanceImpl(Instance inst) {
-		if (!(inst instanceof NativeDenseInstance)) 
-			throw new RuntimeException("Only NativeDenseInstance is supported");
-		
 		if (!m_native_init)
 		{
 			m_copy_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
@@ -157,23 +160,24 @@ public class DenseSGD extends AbstractClassifier implements NativeClassifier {
 		
 		if (m_native_batch == null)
 		{
-			m_native_batch = new NativeDenseInstanceBatch(inst.dataset(), m_batch_size);
+			m_native_batch = new DenseOffHeapBuffer(m_batch_size, inst.dataset().numAttributes()-1);
+			m_row = 0;
 		}
-		boolean full = m_native_batch.addInstance((NativeInstance) inst);
-		if (full)
+		m_native_batch.set(inst, m_row);
+		m_row ++;
+		if (m_row == m_batch_size)
 		{
-			final NativeInstanceBatch batch = m_native_batch;
-			//batch.commit();
-			//trainNative(batch);
-			//batch.release();
-			
+			m_row = 0;
+			final DenseOffHeapBuffer batch = m_native_batch;
+		
 			m_copy_thread.submit( () -> 
 			{
 				batch.commit();
 				m_train_thread.submit( () -> {trainNative(batch); batch.release(); });
 			}
 			);
-			m_native_batch =  new NativeDenseInstanceBatch(inst.dataset(), m_batch_size);
+		
+			m_native_batch =  new DenseOffHeapBuffer(m_batch_size, inst.dataset().numAttributes()-1);;
 		}
 	}
 

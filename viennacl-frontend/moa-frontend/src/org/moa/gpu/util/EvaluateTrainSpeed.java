@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import moa.classifiers.Classifier;
@@ -96,6 +97,29 @@ public class EvaluateTrainSpeed extends MainTask {
     public FlagOption cacheTestOption = new FlagOption("cacheTest", 'c',
             "Cache test instances in memory.");
 
+    
+    class CircularList<T> 
+    {
+    	private Iterator<T> it;
+    	private ArrayList<T> m_list = new ArrayList<T>();
+    	public void add(T o)
+    	{
+    		m_list.add(o);
+    	}
+    	
+    	public T next()
+    	{
+    		if (it == null)
+    			it = m_list.iterator();
+    		if (it.hasNext())
+    			return it.next();
+   			it = m_list.iterator();
+    		return it.next();
+    		
+    	}
+    
+    }
+    
     @Override
     protected Object doMainTask(TaskMonitor monitor, ObjectRepository repository) {
         Classifier learner = (Classifier) getPreparedClassOption(this.learnerOption);
@@ -122,31 +146,7 @@ public class EvaluateTrainSpeed extends MainTask {
         }
         boolean firstDump = true;
         InstanceStream testStream = null;
-        int testSize = this.testSizeOption.getValue();
-        if (this.cacheTestOption.isSet()) {
-            monitor.setCurrentActivity("Caching test examples...", -1.0);
-            Instances testInstances = new Instances(stream.getHeader(),
-                    this.testSizeOption.getValue());
-            while (testInstances.numInstances() < testSize) {
-                testInstances.add(stream.nextInstance());
-                if (testInstances.numInstances()
-                        % INSTANCES_BETWEEN_MONITOR_UPDATES == 0) {
-                    if (monitor.taskShouldAbort()) {
-                        return null;
-                    }
-                    monitor.setCurrentActivityFractionComplete((double) testInstances.numInstances()
-                            / (double) (this.testSizeOption.getValue()));
-                }
-            }
-            testStream = new CachedInstancesStream(testInstances);
-        } else {
-            //testStream = (InstanceStream) stream.copy();
-            testStream = stream;
-            /*monitor.setCurrentActivity("Skipping test examples...", -1.0);
-            for (int i = 0; i < testSize; i++) {
-            stream.nextInstance();
-            }*/
-        }
+        boolean lazy = true;
         instancesProcessed = 0;
         TimingUtils.enablePreciseTiming();
         double totalTrainTime = 0.0;
@@ -155,29 +155,25 @@ public class EvaluateTrainSpeed extends MainTask {
                 && stream.hasMoreInstances() == true) {
             monitor.setCurrentActivityDescription("Training...");
             
-            learner.trainOnInstance(stream.nextInstance()); // force lazy init
+            CircularList<Instance> list = new CircularList<Instance>();
+            for (int i = 0; i < 10 ; ++i) // cache instances to avoid instance generation overhead
+            	list.add(stream.nextInstance());
             
             long instancesTarget = instancesProcessed
                     + this.sampleFrequencyOption.getValue();
             long trainStartTime = System.nanoTime();
-            while (instancesProcessed < instancesTarget && stream.hasMoreInstances() == true) {
-                learner.trainOnInstance(stream.nextInstance());
+            while (instancesProcessed < instancesTarget) {
+                learner.trainOnInstance(list.next());
                 instancesProcessed++;
-                if (instancesProcessed % INSTANCES_BETWEEN_MONITOR_UPDATES == 0) {
-                    if (monitor.taskShouldAbort()) {
-                        return null;
-                    }
-                    monitor.setCurrentActivityFractionComplete((double) (instancesProcessed)
-                            / (double) (this.trainSizeOption.getValue()));
-                }
             }
-            try {learner.getVotesForInstance(null); } catch (Exception e) {}
-            
+            try {learner.getVotesForInstance(null); } catch (Exception e) {} // sync any pending training
+            if (lazy)
+            {
+            	lazy = false;
+            	continue;
+            }
             double lastTrainTime = ((double)(System.nanoTime() - trainStartTime)) / 1000000000;
             totalTrainTime += lastTrainTime;
-            if (totalTrainTime > this.trainTimeOption.getValue() ) {
-                break;
-            }
             List<Measurement> measurements = new ArrayList<Measurement>();
             measurements.add(new Measurement("evaluation instances",            		
                     instancesProcessed));
@@ -197,6 +193,10 @@ public class EvaluateTrainSpeed extends MainTask {
             if (monitor.resultPreviewRequested()) {
                 monitor.setLatestResultPreview(learningCurve.copy());
             }
+            if (totalTrainTime > this.trainTimeOption.getValue() ) {
+                break;
+            }
+
 
         }
         if (immediateResultStream != null) {

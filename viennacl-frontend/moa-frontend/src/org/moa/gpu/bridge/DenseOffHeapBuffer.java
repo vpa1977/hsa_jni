@@ -9,7 +9,7 @@ public class DenseOffHeapBuffer {
 	private long m_size;
 	private long m_step;
 	private long m_buffer;
-	private int m_rows;
+	private long m_rows;
 	private long m_class_buffer;
 	
 	public DenseOffHeapBuffer(int rows, int numAttributes)

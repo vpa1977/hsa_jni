@@ -5,11 +5,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.moa.gpu.bridge.DenseOffHeapBuffer;
 import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeInstance;
 import org.moa.gpu.bridge.NativeInstanceBatch;
 import org.moa.gpu.bridge.NativeSparseInstance;
 import org.moa.gpu.bridge.NativeSparseInstanceBatch;
+import org.moa.gpu.bridge.SparseOffHeapBuffer;
 
 import moa.classifiers.AbstractClassifier;
 import moa.core.Measurement;
@@ -29,7 +31,7 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 	private ThreadPoolExecutor m_copy_thread;
 	private ThreadPoolExecutor m_train_thread;
 	
-	private NativeInstanceBatch m_native_batch;
+	private SparseOffHeapBuffer m_native_batch;
 	
 	
     /** The regularization parameter */
@@ -51,7 +53,7 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
                 "Squared loss (regression)"}, 0);
     
     
-    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 1024, 2, Integer.MAX_VALUE);
+    public IntOption learningBatchSize = new IntOption("learningBatchSize", 'b', "Learning batch size", 1024, 1, Integer.MAX_VALUE);
     
 
     protected static final int HINGE = 0;
@@ -66,16 +68,17 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 	protected double m_learning_rate = 0.0001;
 	private int m_batch_size;
 	private boolean m_native_init = false;
+	private int m_row;
 
 	
-	private native double[] getVotesForSparseInstance(NativeSparseInstance inst );
+	private native double[] getVotesForSparseInstance(DenseOffHeapBuffer inst );
 	
 	
 	/** 
 	 * Train on the next batch
 	 * @param w
 	 */
-	private native void trainNative(NativeInstanceBatch w);
+	private native void trainNative(SparseOffHeapBuffer w);
 	
 	
 	/** 
@@ -112,8 +115,9 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 	@Override
 	public double[] getVotesForInstance(Instance inst) {
 		try {
-			m_copy_thread.submit(() -> {}).get();
-			m_train_thread.submit(() -> {}).get();
+			m_copy_thread.submit( () -> {}).get();
+			m_train_thread.submit( () -> {}).get();
+			
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -121,10 +125,15 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (inst instanceof NativeSparseInstance)
-			return getVotesForSparseInstance((NativeSparseInstance)inst);
-		throw new RuntimeException("Unsupported instance type");
-		
+		if (inst == null)
+			return null;
+		DenseOffHeapBuffer buffer = new DenseOffHeapBuffer(1,  inst.numAttributes()-1);
+		buffer.begin();
+		buffer.set(inst, 0);
+		buffer.commit();
+		double[] res =  getVotesForSparseInstance(buffer);
+		buffer.release();
+		return res;
 	}
 
 	
@@ -140,9 +149,6 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 
 	@Override
 	public void trainOnInstanceImpl(Instance inst) {
-		if (!(inst instanceof NativeInstance)) 
-			throw new RuntimeException("Only NativeInstance is supported");
-		
 		if (!m_native_init)
 		{
 			m_copy_thread = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(QUEUE_SIZE));
@@ -154,19 +160,21 @@ public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 		
 		if (m_native_batch == null)
 		{
-			m_native_batch = new NativeSparseInstanceBatch(inst.dataset(), m_batch_size);
+			m_native_batch = new SparseOffHeapBuffer(m_batch_size, inst.dataset().numAttributes()-1);
+			m_row = 0;
 		}
-		boolean full = m_native_batch.addInstance((NativeInstance) inst);
-		if (full)
+		m_native_batch.set(inst, m_row);
+		m_row ++;
+		if (m_row == m_batch_size)
 		{
-			final NativeInstanceBatch batch = m_native_batch;
+			m_row = 0;
+			final SparseOffHeapBuffer batch = m_native_batch;
 			m_copy_thread.submit(() -> {
 				batch.commit();
 				m_train_thread.submit(() -> {trainNative(batch);batch.release(); });
 			});
 			
-			m_native_batch = new NativeSparseInstanceBatch(inst.dataset(), m_batch_size);
-			m_native_batch.addInstance((NativeInstance) inst);
+			m_native_batch = new SparseOffHeapBuffer(m_batch_size, inst.dataset().numAttributes()-1);
 		}
 	}
 
