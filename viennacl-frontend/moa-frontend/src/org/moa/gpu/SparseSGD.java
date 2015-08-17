@@ -24,7 +24,7 @@ import weka.core.Instance;
  */
 public class SparseSGD extends AbstractClassifier implements NativeClassifier {
 
-    private static final int QUEUE_SIZE = 10;
+    private static final int QUEUE_SIZE = 30;
     private ThreadPoolExecutor m_copy_thread;
     private ThreadPoolExecutor m_train_thread;
     private ArrayBlockingQueue<SparseOffHeapBuffer> m_heaps;
