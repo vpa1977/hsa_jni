@@ -2,11 +2,9 @@ package test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.moa.gpu.DenseSGD;
-import org.moa.gpu.NativeDenseInstanceStreamGenerator;
+import org.moa.gpu.FastRandomTreeGenerator;
 import org.moa.gpu.SparseSGD;
 
-import moa.streams.generators.RandomRBFGenerator;
 import weka.core.Instance;
 
 public class TestSparseSGD {
@@ -19,8 +17,7 @@ public class TestSparseSGD {
 		testStream.prepareForUse();
 		
 		
-		NativeDenseInstanceStreamGenerator stream = new NativeDenseInstanceStreamGenerator();
-		stream.baseStreamOption.setCurrentObject(testStream);
+		FastRandomTreeGenerator stream = new FastRandomTreeGenerator();
 		stream.prepareForUse();
 		
 		test.SGD moaSGD = new test.SGD();

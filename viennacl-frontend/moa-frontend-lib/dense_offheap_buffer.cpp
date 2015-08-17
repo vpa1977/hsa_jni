@@ -21,7 +21,7 @@ JNIEXPORT jlong JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_allocate
 	const cl_context& cl_ctx = get_global_context().opencl_context().handle().get();
 	void * ptr = clSVMAlloc(cl_ctx, CL_MEM_READ_WRITE, size_in_bytes, 0);
 	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
-	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, ptr, size_in_bytes, 0, NULL, NULL);
+	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size_in_bytes, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
 	return (jlong)ptr;
 }
@@ -48,16 +48,16 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_release
 JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_begin
 (JNIEnv *env, jobject buffer)
 {
-/*	static jclass clazz = env->FindClass(DENSE_OFFHEAP_BUFFER);
+	static jclass clazz = env->FindClass(DENSE_OFFHEAP_BUFFER);
 	static jfieldID field = env->GetFieldID(clazz, "m_buffer", "J");
 	static jfieldID size_field = env->GetFieldID(clazz, "m_size", "J");
 	void * ptr = (void*)env->GetLongField(buffer, field);
 	cl_int err;
 	jlong size = env->GetLongField(buffer, size_field);
 	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
-	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE, ptr, size, 0, NULL, NULL);
+	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
-*/
+
 }
 
 /*

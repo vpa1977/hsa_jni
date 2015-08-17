@@ -22,7 +22,7 @@ JNIEXPORT jlong JNICALL Java_org_moa_gpu_bridge_SparseOffHeapBuffer_allocate
 		std::cout << "memory allocation for " << size_in_bytes << " failed " << std::endl;
 	}
 	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
-	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, ptr, size_in_bytes, 0, NULL, NULL);
+	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size_in_bytes, 0, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
 		std::cout << "cl error memory allocation for " << err << " failed " << std::endl;
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_SparseOffHeapBuffer_nativeBegin
 	cl_int err;
 	void * ptr = (void*)handle;
 	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
-	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, ptr, size_in_bytes, 0, NULL, NULL);
+	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size_in_bytes, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
 
 }

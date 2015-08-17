@@ -1,32 +1,21 @@
 
 
-import org.moa.gpu.ConsoleMonitor;
-import org.moa.gpu.Context;
-import org.moa.gpu.DenseSGD;
-import org.moa.gpu.SparseSGD;
-
-import org.moa.gpu.SimpleWindow;
-import org.moa.gpu.config.*;
-import org.moa.gpu.util.EvaluateTrainSpeed;
-
 import java.io.FileInputStream;
 import java.util.List;
 
 import javax.xml.bind.JAXB;
 
-import weka.classifiers.lazy.IBk;
-import weka.core.neighboursearch.LinearNNSearch;
-import moa.classifiers.meta.WEKAClassifier;
+import org.moa.gpu.Context;
+import org.moa.gpu.SparseSGD;
+import org.moa.gpu.config.Experiments;
+import org.moa.gpu.config.SGDExperiment;
+import org.moa.gpu.util.EvaluateTrainSpeed;
+
 import moa.options.AbstractOptionHandler;
 import moa.options.ClassOption;
 import moa.streams.InstanceStream;
 import moa.streams.generators.RandomTreeGenerator;
-import moa.tasks.EvaluatePeriodicHeldOutTest;
 import moa.tasks.NullMonitor;
-
-import com.nativelibs4java.opencl.CLContext;
-import com.nativelibs4java.opencl.CLDevice;
-import com.nativelibs4java.opencl.JavaCL;
 
 public class SparseSGDTest {
 
@@ -38,6 +27,8 @@ public class SparseSGDTest {
 		Context.load();
 		
 		RandomTreeGenerator d;
+		
+		boolean skip_cpu = args.length > 2 && args[1].equals("nocpu");
 		
 		
 		Experiments experiments = JAXB.unmarshal(new FileInputStream(args[0]),Experiments.class );
@@ -81,6 +72,7 @@ public class SparseSGDTest {
 				test.trainSizeOption.setValue(0);
 				test.trainTimeOption.setValue(60);
 				test.sampleFrequencyOption.setValue(train_batch*5+1);
+				
 				test.streamOption.setCurrentObject(generator);
 				test.learnerOption.setCurrentObject(hsaSGD);
 				
@@ -88,8 +80,9 @@ public class SparseSGDTest {
 				 ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-				
-			/*	test = new EvaluateTrainSpeed();
+				if (skip_cpu)
+					System.exit(0);
+				test = new EvaluateTrainSpeed();
 				test.trainSizeOption.setValue(0);
 				test.trainTimeOption.setValue(60);
 				test.sampleFrequencyOption.setValue(train_batch*5+1);
@@ -98,7 +91,7 @@ public class SparseSGDTest {
 				System.out.println("------Classifier:"+ test.learnerOption.getValueAsCLIString()  );
 				ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
-				System.out.println("---------------------------------------------------------------------------");*/
+				System.out.println("---------------------------------------------------------------------------");
 				System.exit(0);
 			}
 			catch (Throwable t )

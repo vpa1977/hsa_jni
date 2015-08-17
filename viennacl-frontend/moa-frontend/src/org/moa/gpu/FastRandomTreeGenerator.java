@@ -1,9 +1,9 @@
 package org.moa.gpu;
 
-import weka.core.DenseInstance;
-import weka.core.Instance;
 import moa.core.InstancesHeader;
 import moa.streams.generators.RandomTreeGenerator;
+import weka.core.DenseInstance;
+import weka.core.Instance;
 
 public class FastRandomTreeGenerator extends RandomTreeGenerator {
 

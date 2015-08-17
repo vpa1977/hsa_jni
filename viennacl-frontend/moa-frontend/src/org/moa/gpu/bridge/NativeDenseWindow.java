@@ -7,7 +7,8 @@ import weka.core.Instances;
 public class NativeDenseWindow {
 	public NativeDenseWindow(Instances dataset, int rows)
 	{
-		create(dataset,rows);
+		throw new RuntimeException("This class is obsolete. Do not use");
+		//create(dataset,rows);
 	}
 	
 	public void create(Instances dataset, int rows)

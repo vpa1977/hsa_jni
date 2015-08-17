@@ -1,30 +1,20 @@
 
 
-import org.moa.gpu.Context;
-import org.moa.gpu.SparseSGD;
-
-import org.moa.gpu.SimpleWindow;
-import org.moa.gpu.config.*;
-
 import java.io.FileInputStream;
 import java.util.List;
 
 import javax.xml.bind.JAXB;
 
-import test.TestNativeBatchPerformance;
-import weka.classifiers.lazy.IBk;
-import weka.core.neighboursearch.LinearNNSearch;
-import moa.classifiers.meta.WEKAClassifier;
-import moa.options.AbstractOptionHandler;
+import org.moa.gpu.Context;
+import org.moa.gpu.config.Experiments;
+import org.moa.gpu.config.SGDExperiment;
+
 import moa.options.ClassOption;
 import moa.streams.InstanceStream;
 import moa.streams.generators.RandomTreeGenerator;
 import moa.tasks.EvaluatePeriodicHeldOutTest;
 import moa.tasks.NullMonitor;
-
-import com.nativelibs4java.opencl.CLContext;
-import com.nativelibs4java.opencl.CLDevice;
-import com.nativelibs4java.opencl.JavaCL;
+import test.TestNativeBatchPerformance;
 
 public class NativeBatchTest {
 

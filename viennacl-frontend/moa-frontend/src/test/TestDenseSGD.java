@@ -3,9 +3,9 @@ package test;
 import org.junit.Assert;
 import org.junit.Test;
 import org.moa.gpu.DenseSGD;
+import org.moa.gpu.FastRandomTreeGenerator;
 import org.moa.gpu.NativeDenseInstanceStreamGenerator;
 
-import moa.streams.generators.RandomRBFGenerator;
 import weka.core.Instance;
 
 public class TestDenseSGD {
@@ -18,8 +18,7 @@ public class TestDenseSGD {
 		testStream.prepareForUse();
 		
 		
-		NativeDenseInstanceStreamGenerator stream = new NativeDenseInstanceStreamGenerator();
-		stream.baseStreamOption.setCurrentObject(testStream);
+		FastRandomTreeGenerator stream = new FastRandomTreeGenerator();
 		stream.prepareForUse();
 		
 		test.SGD moaSGD = new test.SGD();
@@ -59,8 +58,8 @@ public class TestDenseSGD {
 		testStream.fileOption.setValue("test.arff");
 		testStream.prepareForUse();
 		
-		NativeDenseInstanceStreamGenerator stream = new NativeDenseInstanceStreamGenerator();
-		stream.baseStreamOption.setCurrentObject(testStream);
+		FastRandomTreeGenerator stream = new FastRandomTreeGenerator();
+
 		stream.prepareForUse();
 		
 		int batchSize = 256;

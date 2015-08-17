@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>run</actionName>
+            <packagings>
+                <packaging>jar</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.args>-classpath %classpath SparseSGDTest C:\master_in_progress\sgd_tests\sgd_test_16384.xml</exec.args>
+                <exec.executable>java</exec.executable>
+                <exec.workingdir>C:\master_in_progress\hsa_jni\viennacl-frontend\moa-frontend\</exec.workingdir>
+            </properties>
+        </action>
+        <action>
+            <actionName>debug</actionName>
+            <packagings>
+                <packaging>jar</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath SparseSGDTest C:\master_in_progress\sgd_tests\sgd_test_16384.xml</exec.args>
+                <exec.executable>java</exec.executable>
+                <jpda.listen>true</jpda.listen>
+                <exec.workingdir>C:\master_in_progress\hsa_jni\viennacl-frontend\moa-frontend\</exec.workingdir>
+            </properties>
+        </action>
+        <action>
+            <actionName>profile</actionName>
+            <packagings>
+                <packaging>jar</packaging>
+            </packagings>
+            <goals>
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.args>-classpath %classpath SparseSGDTest C:\master_in_progress\sgd_tests\sgd_test_16384.xml</exec.args>
+                <exec.executable>java</exec.executable>
+                <exec.workingdir>C:\master_in_progress\hsa_jni\viennacl-frontend\moa-frontend\</exec.workingdir>
+                <Env.OPENCL_DEVICE>Spectre</Env.OPENCL_DEVICE>
+            </properties>
+        </action>
+    </actions>

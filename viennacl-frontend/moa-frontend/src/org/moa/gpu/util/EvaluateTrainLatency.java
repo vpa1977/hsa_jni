@@ -51,7 +51,7 @@ import weka.core.Instance;
  * @author Richard Kirkby (rkirkby@cs.waikato.ac.nz)
  * @version $Revision: 7 $
  */
-public class EvaluateTrainSpeed extends MainTask {
+public class EvaluateTrainLatency extends MainTask {
 
     @Override
     public String getPurposeString() {
@@ -145,6 +145,7 @@ public class EvaluateTrainSpeed extends MainTask {
         InstanceStream testStream = null;
         boolean lazy = true;
         instancesProcessed = 0;
+        long batchesProcessed = 0;
         TimingUtils.enablePreciseTiming();
         double totalTrainTime = 0.0;
         while ((this.trainSizeOption.getValue() < 1
@@ -170,28 +171,34 @@ public class EvaluateTrainSpeed extends MainTask {
             	continue;
             }
             double lastTrainTime = ((double)(System.nanoTime() - trainStartTime)) / 1000000000;
+            batchesProcessed ++;
             totalTrainTime += lastTrainTime;
-            List<Measurement> measurements = new ArrayList<Measurement>();
-            measurements.add(new Measurement("evaluation instances",            		
-                    instancesProcessed));
-            measurements.add(new Measurement("total train speed",
-                    instancesProcessed / totalTrainTime));
-            measurements.add(new Measurement("last train speed",
-                    this.sampleFrequencyOption.getValue() / lastTrainTime));
-            learningCurve.insertEntry(new LearningEvaluation(measurements.toArray(new Measurement[measurements.size()])));
-            if (immediateResultStream != null) {
-                if (firstDump) {
-                    immediateResultStream.println(learningCurve.headerToString());
-                    firstDump = false;
-                }
-                immediateResultStream.println(learningCurve.entryToString(learningCurve.numEntries() - 1));
-                immediateResultStream.flush();
-            }
-            if (monitor.resultPreviewRequested()) {
-                monitor.setLatestResultPreview(learningCurve.copy());
-            }
             if (totalTrainTime > this.trainTimeOption.getValue() ) {
                 break;
+            }
+            if (batchesProcessed > 30)
+            {
+                List<Measurement> measurements = new ArrayList<Measurement>();
+                measurements.add(new Measurement("evaluation instances",            		
+                		batchesProcessed));
+                measurements.add(new Measurement("total train speed",
+                        totalTrainTime / batchesProcessed));
+                measurements.add(new Measurement("last train speed",
+                         lastTrainTime));
+                learningCurve.insertEntry(new LearningEvaluation(measurements.toArray(new Measurement[measurements.size()])));
+                if (immediateResultStream != null) {
+                    if (firstDump) {
+                        immediateResultStream.println(learningCurve.headerToString());
+                        firstDump = false;
+                    }
+                    immediateResultStream.println(learningCurve.entryToString(learningCurve.numEntries() - 1));
+                    immediateResultStream.flush();
+                }
+                if (monitor.resultPreviewRequested()) {
+                    monitor.setLatestResultPreview(learningCurve.copy());
+                }
+
+            	break;
             }
 
 

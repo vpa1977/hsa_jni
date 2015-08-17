@@ -1,32 +1,21 @@
 
 
-import org.moa.gpu.ConsoleMonitor;
-import org.moa.gpu.Context;
-import org.moa.gpu.DenseSGD;
-import org.moa.gpu.SparseSGD;
-
-import org.moa.gpu.SimpleWindow;
-import org.moa.gpu.config.*;
-import org.moa.gpu.util.EvaluateTrainSpeed;
-
 import java.io.FileInputStream;
 import java.util.List;
 
 import javax.xml.bind.JAXB;
 
-import weka.classifiers.lazy.IBk;
-import weka.core.neighboursearch.LinearNNSearch;
-import moa.classifiers.meta.WEKAClassifier;
+import org.moa.gpu.Context;
+import org.moa.gpu.DenseSGD;
+import org.moa.gpu.config.Experiments;
+import org.moa.gpu.config.SGDExperiment;
+import org.moa.gpu.util.EvaluateTrainSpeed;
+
 import moa.options.AbstractOptionHandler;
 import moa.options.ClassOption;
 import moa.streams.InstanceStream;
 import moa.streams.generators.RandomTreeGenerator;
-import moa.tasks.EvaluatePeriodicHeldOutTest;
 import moa.tasks.NullMonitor;
-
-import com.nativelibs4java.opencl.CLContext;
-import com.nativelibs4java.opencl.CLDevice;
-import com.nativelibs4java.opencl.JavaCL;
 
 public class DenseSGDTest {
 
@@ -89,7 +78,7 @@ public class DenseSGDTest {
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
 				
-				test = new EvaluateTrainSpeed();
+				/*test = new EvaluateTrainSpeed();
 				test.trainSizeOption.setValue(0);
 				test.trainTimeOption.setValue(120);
 				test.sampleFrequencyOption.setValue(train_batch*5+1);
@@ -100,7 +89,7 @@ public class DenseSGDTest {
 				ret = test.doTask(new NullMonitor(),null);
 				System.out.println(ret);
 				System.out.println("---------------------------------------------------------------------------");
-			
+			*/
 				System.exit(0);
 			}
 			catch (Throwable t )

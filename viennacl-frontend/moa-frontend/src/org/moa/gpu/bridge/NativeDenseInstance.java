@@ -2,8 +2,6 @@ package org.moa.gpu.bridge;
 
 import java.util.Enumeration;
 
-import org.moa.gpu.AccessibleSparseInstance;
-
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -14,9 +12,11 @@ public class NativeDenseInstance implements NativeInstance {
 
 	public NativeDenseInstance(DenseInstance source)
 	{
+		
 		m_instance = new DenseInstance(source);
 		m_instance.setDataset(source.dataset());
 		init();
+		throw new RuntimeException("This class is obsolete. Do not use");
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package org.moa.gpu;
+package org.moa.gpu.bridge;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,8 +9,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
 
-public class AccessibleSparseInstance extends SparseInstance {
-	public AccessibleSparseInstance(Instance i) {
+public class SparseInstanceAccess extends SparseInstance {
+	public SparseInstanceAccess(Instance i) {
 		super(i);
 		setDataset(i.dataset());
 	}
@@ -21,7 +21,7 @@ public class AccessibleSparseInstance extends SparseInstance {
 	 * @param instance
 	 * @param att_mapping
 	 */
-	 public AccessibleSparseInstance(Instances parent, Instance instance, HashMap<Integer, Integer> att_mapping) {
+	 public SparseInstanceAccess(Instances parent, Instance instance, HashMap<Integer, Integer> att_mapping) {
 	    m_Weight = instance.weight();
 	    m_Dataset = parent;
 	    m_NumAttributes = parent.numAttributes();

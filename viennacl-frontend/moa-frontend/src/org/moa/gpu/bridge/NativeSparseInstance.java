@@ -2,8 +2,6 @@ package org.moa.gpu.bridge;
 
 import java.util.Enumeration;
 
-import org.moa.gpu.AccessibleSparseInstance;
-
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -13,8 +11,9 @@ public class NativeSparseInstance implements NativeInstance {
 
 	public NativeSparseInstance(Instance source)
 	{
-		m_instance = new AccessibleSparseInstance(source);
-		init();
+		throw new RuntimeException("This class is obsolete. Do not use");
+		//m_instance = new SparseInstanceAccess(source);
+		//init();
 	}
 
 	@Override
@@ -315,6 +314,6 @@ public class NativeSparseInstance implements NativeInstance {
 	private native void init();
 	
 	private long m_native_context;
-	private AccessibleSparseInstance m_instance;
+	private SparseInstanceAccess m_instance;
 
 }

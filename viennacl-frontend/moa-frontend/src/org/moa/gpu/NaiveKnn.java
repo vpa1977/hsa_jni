@@ -6,23 +6,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.moa.gpu.bridge.NativeClassifier;
-import org.moa.gpu.bridge.NativeInstance;
-import org.moa.gpu.bridge.NativeInstanceBatch;
-import org.moa.gpu.bridge.NativeDenseInstanceBatch;
-import org.moa.gpu.bridge.NativeDenseWindow;
 import org.moa.gpu.bridge.NativeDenseInstance;
-import org.moa.gpu.util.DirectMemory;
+import org.moa.gpu.bridge.NativeDenseWindow;
+import org.moa.gpu.bridge.NativeInstance;
 
-import weka.core.DenseInstance;
-import weka.core.Instance;
-import weka.core.SparseInstance;
 import moa.classifiers.AbstractClassifier;
-import moa.core.DoubleVector;
 import moa.core.Measurement;
-import moa.options.ClassOption;
-import moa.options.FloatOption;
 import moa.options.IntOption;
-import moa.options.MultiChoiceOption;
+import weka.core.Instance;
 
 /** 
  * SGD implementation backed by the native library.

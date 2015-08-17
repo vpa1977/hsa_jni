@@ -1,7 +1,5 @@
 package test;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.moa.gpu.NativeDenseInstanceStreamGenerator;
 import org.moa.gpu.NativeSparseInstanceStreamGenerator;

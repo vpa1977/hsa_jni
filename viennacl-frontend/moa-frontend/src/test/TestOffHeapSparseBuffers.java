@@ -1,21 +1,14 @@
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.lang.annotation.Native;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.moa.gpu.NativeDenseInstanceStreamGenerator;
 import org.moa.gpu.SparseInstanceStreamGenerator;
-import org.moa.gpu.bridge.DenseOffHeapBuffer;
-import org.moa.gpu.bridge.NativeDenseInstance;
-import org.moa.gpu.bridge.NativeDenseInstanceBatch;
 import org.moa.gpu.bridge.SparseOffHeapBuffer;
 
-import moa.streams.generators.RandomTreeGenerator;
 import weka.core.Instance;
-import weka.core.SparseInstance;
 
 public class TestOffHeapSparseBuffers {
 
@@ -32,7 +25,7 @@ public class TestOffHeapSparseBuffers {
 			store.add(spr.nextInstance());
 
 		long clock = System.currentTimeMillis();
-		for (int l = 0; l < 100000000; ++l) {
+		for (int l = 0; l < 10000; ++l) {
 			SparseOffHeapBuffer sparseOffHeap = new SparseOffHeapBuffer(1024, spr.getHeader().numAttributes()-1);
 
 			sparseOffHeap.begin();

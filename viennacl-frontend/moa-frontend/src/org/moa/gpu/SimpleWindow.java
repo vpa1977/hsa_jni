@@ -1,7 +1,5 @@
 package org.moa.gpu;
 
-import java.lang.reflect.Constructor;
-import sun.misc.Unsafe;
 import java.util.ArrayList;
 
 import weka.core.Instance;

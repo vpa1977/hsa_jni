@@ -1,10 +1,5 @@
 package org.moa.gpu.bridge;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-
-import org.moa.gpu.NativeSparseInstanceStreamGenerator;
-
 import weka.core.Instances;
 /** 
  * Java interface to the batch of instances. 
@@ -15,7 +10,8 @@ import weka.core.Instances;
 public class NativeSparseInstanceBatch implements NativeInstanceBatch {
 	public NativeSparseInstanceBatch(Instances dataset, int rows)
 	{
-		init(dataset, rows);
+		throw new RuntimeException("This class is obsolete. Do not use");
+		//init(dataset, rows);
 	}
 	
 	

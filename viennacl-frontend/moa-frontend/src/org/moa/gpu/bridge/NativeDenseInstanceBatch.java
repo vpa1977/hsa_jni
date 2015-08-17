@@ -1,7 +1,6 @@
 package org.moa.gpu.bridge;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import weka.core.Instances;
 /** 
@@ -14,7 +13,8 @@ public class NativeDenseInstanceBatch implements NativeInstanceBatch {
 	
 	public NativeDenseInstanceBatch(Instances dataset, int rows)
 	{
-		create(dataset,rows);
+		throw new RuntimeException("This class is obsolete. Do not use");
+		//create(dataset,rows);
 	}
 	
 	public void create(Instances dataset, int rows)
