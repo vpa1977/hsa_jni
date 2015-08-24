@@ -1,0 +1,1 @@
+<Experiments><sgd>	<train_batch>1024</train_batch>	<test_batch>128</test_batch><test_size>100</test_size><train_size>56</train_size><generator>org.moa.gpu.SparseInstanceStreamGenerator -a 32768 -m 1 -b ( org.moa.gpu.FastRandomTreeGenerator -u 16384 -o 0)</generator></sgd></Experiments>
