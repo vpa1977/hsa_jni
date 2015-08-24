@@ -29,7 +29,7 @@ static viennacl::ml::sgd* GetNativeImpl(JNIEnv* env, jobject instance)
 
 
 
-static jdoubleArray votesForInstance(JNIEnv* env, viennacl::vector<double>& instance, jobject sgd)
+static jdoubleArray votesForInstance(JNIEnv* env, const viennacl::vector<double>& instance, jobject sgd)
 {
 	viennacl::ml::sgd * sgd_impl  = GetNativeImpl(env,sgd);
 

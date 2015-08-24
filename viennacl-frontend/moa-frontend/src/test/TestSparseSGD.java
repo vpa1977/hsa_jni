@@ -1,5 +1,7 @@
 package test;
 
+import java.io.FileInputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.moa.gpu.FastRandomTreeGenerator;
@@ -9,8 +11,14 @@ import weka.core.Instance;
 
 public class TestSparseSGD {
 	@Test
-	public void testSideBySide() 
+	public void testSideBySide() throws Throwable 
 	{
+		System.setProperty("java.library.path", "/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend/");
+		
+		FileInputStream fis = new FileInputStream("libhsa-runtime64.so.1");
+		fis.available();
+		fis.close();
+		
 		System.loadLibrary("moa-frontend-lib");
 		ArffStreamGenerator testStream = new ArffStreamGenerator();
 		testStream.fileOption.setValue("test.arff");

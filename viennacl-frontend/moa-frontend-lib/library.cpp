@@ -16,6 +16,10 @@
 
 viennacl::context& get_global_context()
 {
+#ifdef VIENNACL_WITH_HSA
+	static viennacl::context g_context = viennacl::hsa::current_context();
+	return g_context;
+#else
 	//static viennacl::context g_context(viennacl::MAIN_MEMORY);
 	static viennacl::context g_context = viennacl::ocl::current_context();
 	static bool init = false;
@@ -29,6 +33,7 @@ viennacl::context& get_global_context()
 		init = true;
 	}
 	return g_context;
+#endif
 }
 
 
@@ -89,8 +94,6 @@ cl_mem write_with_data_queue(void* source, size_t len)
 void write_with_data_queue(cl_mem dst, void* source, size_t len)
 {
 	cl_int err;
-	cl_context ctx = get_global_context().opencl_pcontext()->handle().get();
-	
 	cl_command_queue queue = get_global_context().opencl_pcontext()->get_queue(get_global_context().opencl_pcontext()->current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
 	err = clEnqueueWriteBuffer(queue, dst, true, 0, len, source, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);

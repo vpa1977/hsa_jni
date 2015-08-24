@@ -65,8 +65,9 @@ struct shared_memory_instance_batch
 	size_t m_num_columns;
 	size_t m_index;
 	std::vector<double> m_instance_values;
+        viennacl::vector<double> m_gpu_instance_values;
 	std::vector<double> m_class_values;
-	viennacl::vector<double> m_gpu_instance_values;
+
 	viennacl::context& m_ctx;
 };
 

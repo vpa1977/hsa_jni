@@ -17,6 +17,10 @@ const char* const DENSE_OFFHEAP_BUFFER = "org/moa/gpu/bridge/DenseOffHeapBuffer"
 JNIEXPORT jlong JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_allocate
 (JNIEnv *env, jobject obj, jlong size_in_bytes)
 {
+#ifdef VIENNACL_WITH_HSA
+    void* ptr= malloc(size_in_bytes);
+    return (jlong)ptr;
+#else    
 	cl_int err;
 	const cl_context& cl_ctx = get_global_context().opencl_context().handle().get();
 	void * ptr = clSVMAlloc(cl_ctx, CL_MEM_READ_WRITE, size_in_bytes, 0);
@@ -24,6 +28,7 @@ JNIEXPORT jlong JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_allocate
 	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size_in_bytes, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
 	return (jlong)ptr;
+#endif        
 }
 
 
@@ -36,8 +41,12 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_release
 (JNIEnv *, jobject, jlong handle)
 {
 	void* ptr = (void*)handle;
+#ifdef VIENNACL_WITH_HSA
+        free(ptr);
+#else        
 	const cl_context& cl_ctx = get_global_context().opencl_context().handle().get();
 	clSVMFree(cl_ctx, ptr);
+#endif        
 }
 
 /*
@@ -48,6 +57,8 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_release
 JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_begin
 (JNIEnv *env, jobject buffer)
 {
+#ifdef VIENNACL_WITH_HSA    
+#else
 	static jclass clazz = env->FindClass(DENSE_OFFHEAP_BUFFER);
 	static jfieldID field = env->GetFieldID(clazz, "m_buffer", "J");
 	static jfieldID size_field = env->GetFieldID(clazz, "m_size", "J");
@@ -57,7 +68,7 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_begin
 	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
 	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
-
+#endif
 }
 
 /*
@@ -68,10 +79,12 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_begin
 JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_commit
 (JNIEnv * env, jobject buffer)
 {
+#ifdef VIENNACL_WITH_HSA
+#else
 	static jclass clazz = env->FindClass(DENSE_OFFHEAP_BUFFER);
 	static jfieldID field = env->GetFieldID(clazz, "m_buffer", "J");
 	static jfieldID classes_field = env->GetFieldID(clazz, "m_class_buffer", "J");
-	static jfieldID size_field = env->GetFieldID(clazz, "m_size", "J");
+//	static jfieldID size_field = env->GetFieldID(clazz, "m_size", "J");
 	void * ptr = (void*)env->GetLongField(buffer, field);
 	void * class_ptr = (void*)env->GetLongField(buffer, classes_field);
 	cl_int err;
@@ -82,4 +95,5 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_commit
 	err = clEnqueueSVMUnmap(queue, class_ptr, 0, 0, NULL);
 	VIENNACL_ERR_CHECK(err);
 	clFinish(queue);
+#endif        
 }
