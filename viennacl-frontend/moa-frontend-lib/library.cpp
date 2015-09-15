@@ -78,7 +78,7 @@ void fill_dense(viennacl::vector<double>& vcl_vector, jlong values, jlong total_
 }
 
 
-
+/*
 cl_mem write_with_data_queue(void* source, size_t len)
 {
 	cl_int err;
@@ -98,3 +98,4 @@ void write_with_data_queue(cl_mem dst, void* source, size_t len)
 	err = clEnqueueWriteBuffer(queue, dst, true, 0, len, source, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
 }
+*/

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <code-assistance-data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <code-model-enabled>true</code-model-enabled>
+    </code-assistance-data>
+    <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <activeConfTypeElem>0</activeConfTypeElem>
+        <activeConfIndexElem>0</activeConfIndexElem>
+    </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/sparse_instance_batch.cpp</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/sparse_sgd.cpp</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/Debug/makefile</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/library.cpp</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/Debug/objects.mk</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/Debug/subdir.mk</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/sparse_offheap_buffer.cpp</file>
+            <file>file:/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend-lib/offheap_helpers.hpp</file>
+        </group>
+    </open-files>
+</project-private>

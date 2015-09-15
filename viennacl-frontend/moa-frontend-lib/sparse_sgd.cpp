@@ -7,7 +7,7 @@
 #include <jni.h>
 #include "library.hpp"
 #include "org_moa_gpu_SparseSGD.h"
-#include <viennacl/ml/sgd.hpp>
+#include "viennacl/ml/sgd.hpp"
 #include "instance_interface.hpp"
 //#include "window_interface.hpp"
 #include <algorithm>

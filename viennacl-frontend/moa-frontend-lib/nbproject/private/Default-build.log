@@ -1,0 +1,69 @@
+Building file: ../dense_instance_batch.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -DVIENNACL_DEBUG_KERNEL1 -DVIENNACL_WITH_UBLAS -DVIENNACL_WITH_OPENCL -I/home/bsp/viennacl-dev -I/home/bsp/jdk8/include/linux -I/home/bsp/jdk8/include -I/home/bsp/boost -I/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend -I/home/bsp/HSA-Runtime-AMD/include -I/home/bsp/appsdk3.0/AMDAPPSDK-3.0-0-Beta/include -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"dense_instance_batch.d" -MT"dense_instance_batch.d" -o "dense_instance_batch.o" "../dense_instance_batch.cpp"
+In file included from ../dense_instance_batch.cpp:5:0:
+../native_instance_batch.hpp: In constructor ‘dense_instance_batch::dense_instance_batch(size_t, size_t, viennacl::context&)’:
+../native_instance_batch.hpp:101:27: warning: ‘dense_instance_batch::m_gpu_instance_values’ will be initialized after [-Wreorder]
+  viennacl::vector<double> m_gpu_instance_values;
+                           ^
+../native_instance_batch.hpp:100:22: warning:   ‘std::vector<double> dense_instance_batch::m_class_values’ [-Wreorder]
+  std::vector<double> m_class_values;
+                      ^
+In file included from ../dense_instance_batch.cpp:5:0:
+../native_instance_batch.hpp:58:2: warning:   when initialized here [-Wreorder]
+  dense_instance_batch(size_t num_rows, size_t num_columns, viennacl::context& ctx ) :
+  ^
+Finished building: ../dense_instance_batch.cpp
+ 
+Building file: ../dense_offheap_buffer.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -DVIENNACL_DEBUG_KERNEL1 -DVIENNACL_WITH_UBLAS -DVIENNACL_WITH_OPENCL -I/home/bsp/viennacl-dev -I/home/bsp/jdk8/include/linux -I/home/bsp/jdk8/include -I/home/bsp/boost -I/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend -I/home/bsp/HSA-Runtime-AMD/include -I/home/bsp/appsdk3.0/AMDAPPSDK-3.0-0-Beta/include -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"dense_offheap_buffer.d" -MT"dense_offheap_buffer.d" -o "dense_offheap_buffer.o" "../dense_offheap_buffer.cpp"
+../dense_offheap_buffer.cpp: In function ‘void Java_org_moa_gpu_bridge_DenseOffHeapBuffer_commit(JNIEnv*, jobject)’:
+../dense_offheap_buffer.cpp:74:18: warning: unused variable ‘size_field’ [-Wunused-variable]
+  static jfieldID size_field = env->GetFieldID(clazz, "m_size", "J");
+                  ^
+Finished building: ../dense_offheap_buffer.cpp
+ 
+Building file: ../dense_sgd.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -DVIENNACL_DEBUG_KERNEL1 -DVIENNACL_WITH_UBLAS -DVIENNACL_WITH_OPENCL -I/home/bsp/viennacl-dev -I/home/bsp/jdk8/include/linux -I/home/bsp/jdk8/include -I/home/bsp/boost -I/home/bsp/git_repository/hsa_jni/viennacl-frontend/moa-frontend -I/home/bsp/HSA-Runtime-AMD/include -I/home/bsp/appsdk3.0/AMDAPPSDK-3.0-0-Beta/include -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"dense_sgd.d" -MT"dense_sgd.d" -o "dense_sgd.o" "../dense_sgd.cpp"
+In file included from /home/bsp/viennacl-dev/viennacl/ml/weights_update.hpp:33:0,
+                 from /home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:22,
+                 from ../dense_sgd.cpp:10:
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp: In function ‘void viennacl::ml::opencl::dense_sgd_update_weights(int, bool, double, double, unsigned int, const viennacl::vector<double>&, const viennacl::scalar<double>&, const viennacl::vector<double>&, viennacl::vector<double>&)’:
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp:89:17: error: ‘const class viennacl::vector<double>’ has no member named ‘opencl_handle’
+    class_values.opencl_handle(),
+                 ^
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp:91:12: error: ‘class viennacl::vector<double>’ has no member named ‘opencl_handle’
+    weights.opencl_handle(), 
+            ^
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp:92:15: error: ‘const class viennacl::vector<double>’ has no member named ‘opencl_handle’
+    row_values.opencl_handle()
+               ^
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp:96:10: error: expected primary-expression before ‘N’
+   (ulong N, uint nominal, uint loss_function, uint row, double learning_rate, double bias, __global double* class_values, double prod_value, __global double* weights, __global double* instance)
+          ^
+/home/bsp/viennacl-dev/viennacl/ml/opencl/ml_helpers.hpp:96:10: error: expected ‘)’ before ‘N’
+In file included from ../dense_sgd.cpp:10:0:
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp: In member function ‘void viennacl::ml::dense_sgd::update_weights_cpu(bool, const std::vector<double>&, const viennacl::scalar<double>&, const viennacl::vector<double>&, int)’:
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:144:28: error: no match for ‘operator<’ (operand types are ‘viennacl::vector<double>’ and ‘int’)
+   if (loss_ != HINGE || (z < 1)) {
+                            ^
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:148:15: error: no match for ‘operator<’ (operand types are ‘viennacl::vector<double>’ and ‘int’)
+     loss = (z < 1) ? 1 : 0;
+               ^
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:151:11: error: no match for ‘operator<’ (operand types are ‘viennacl::vector<double>’ and ‘int’)
+     if (z < 0) {
+           ^
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:152:25: error: cannot convert ‘viennacl::vector<double>’ to ‘double’ for argument ‘1’ to ‘double exp(double)’
+      loss = 1.0 / (exp(z) + 1.0);
+                         ^
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:154:23: error: cannot convert ‘viennacl::vector_expression<const viennacl::vector_base<double>, const double, viennacl::op_mult>’ to ‘double’ for argument ‘1’ to ‘double exp(double)’
+      double t = exp(-z);
+                       ^
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp: In member function ‘void viennacl::ml::dense_sgd::print_weights()’:
+/home/bsp/viennacl-dev/viennacl/ml/sgd.hpp:211:21: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+   for (int i = 0; i < weights_.size(); ++i)
+                     ^
+subdir.mk:42: recipe for target 'dense_sgd.o' failed
+make: *** [dense_sgd.o] Error 1

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="95">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="Debug">
+      </df>
+      <df name="viennacl">
+        <df name="ml">
+          <df name="host">
+            <in>weights_update.hpp</in>
+          </df>
+          <df name="hsa">
+            <in>ml_helpers.hpp</in>
+          </df>
+          <df name="opencl">
+            <in>merge_sort.hpp</in>
+            <in>ml_helpers.hpp</in>
+            <in>ml_kernels.hpp</in>
+          </df>
+          <in>knn.hpp</in>
+          <in>knn_sliding_window.hpp</in>
+          <in>sgd.hpp</in>
+          <in>sort.hpp</in>
+          <in>weights_update.hpp</in>
+        </df>
+      </df>
+      <in>dense_instance_batch.cpp</in>
+      <in>dense_offheap_buffer.cpp</in>
+      <in>dense_sgd.cpp</in>
+      <in>dense_sliding_window.hpp</in>
+      <in>instance_interface.cpp</in>
+      <in>instance_interface.hpp</in>
+      <in>library.cpp</in>
+      <in>library.hpp</in>
+      <in>native_instance_batch.hpp</in>
+      <in>offheap_helpers.hpp</in>
+      <in>shared_memory_instance_batch.cpp</in>
+      <in>shared_memory_instance_batch.hpp</in>
+      <in>sparse_instance_batch.cpp</in>
+      <in>sparse_offheap_buffer.cpp</in>
+      <in>sparse_sgd.cpp</in>
+      <in>window_interface.cpp</in>
+      <in>window_interface.hpp</in>
+    </df>
+  </logicalFolder>
+  <projectmakefile>Debug/makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>Debug</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>
