@@ -12,18 +12,26 @@ extern "C" {
 /*
  * Class:     org_moa_gpu_NaiveKnn
  * Method:    getVotesForDenseInstance
- * Signature: (Lorg/moa/gpu/bridge/DenseOffHeapBuffer;Lorg/moa/gpu/bridge/DenseOffHeapBuffer;)[D
+ * Signature: (Lorg/moa/gpu/bridge/DenseOffHeapBuffer;)[D
  */
 JNIEXPORT jdoubleArray JNICALL Java_org_moa_gpu_NaiveKnn_getVotesForDenseInstance
-  (JNIEnv *, jobject, jobject, jobject);
+  (JNIEnv *, jobject, jobject);
 
 /*
  * Class:     org_moa_gpu_NaiveKnn
  * Method:    initNative
- * Signature: (III[I)V
+ * Signature: (III[IIII)V
  */
 JNIEXPORT void JNICALL Java_org_moa_gpu_NaiveKnn_initNative
-  (JNIEnv *, jobject, jint, jint, jint, jintArray);
+  (JNIEnv *, jobject, jint, jint, jint, jintArray, jint, jint, jint);
+
+/*
+ * Class:     org_moa_gpu_NaiveKnn
+ * Method:    train
+ * Signature: (Lorg/moa/gpu/bridge/DenseOffHeapBuffer;)V
+ */
+JNIEXPORT void JNICALL Java_org_moa_gpu_NaiveKnn_train
+  (JNIEnv *, jobject, jobject);
 
 /*
  * Class:     org_moa_gpu_NaiveKnn

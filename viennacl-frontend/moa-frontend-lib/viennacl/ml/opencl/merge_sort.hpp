@@ -496,9 +496,13 @@ struct merge_sorter
 	viennacl::ocl::kernel local_kernel;
 	viennacl::ocl::kernel global_kernel;
 	viennacl::ocl::kernel init_offsets_kernel;
-	int num_groups;
+	size_t num_groups;
 
-	merge_sorter(int size, const viennacl::context& ctx)
+	merge_sorter()
+	{
+	}
+
+	merge_sorter(size_t size, const viennacl::context& ctx)
 	{
 		src = viennacl::vector<unsigned int>(size, ctx);
 		dst = viennacl::vector<unsigned int>(size, ctx);
@@ -544,7 +548,7 @@ struct merge_sorter
 		global_kernel.global_work_size(0, globalRange);
 
 
-		cl_uint size = src.size();
+		cl_uint size = (cl_uint)src.size();
 		viennacl::ocl::enqueue(init_offsets_kernel(size, src));
 
 		viennacl::ocl::enqueue(local_kernel((cl_uint)in.size(), in, src, viennacl::ocl::local_mem(wg_size * sizeof(cl_double)), viennacl::ocl::local_mem(wg_size * sizeof(cl_double)),
@@ -561,18 +565,18 @@ struct merge_sorter
 		// Calculate the log2 of vecSize, taking into account our block size
 		// from kernel 1 is 256
 		// this is how many merge passes we want
-		int log2BlockSize = in.size() >> 8;
+		size_t log2BlockSize =( in.size() >> 8);
 
 		for (; log2BlockSize > 1; log2BlockSize >>= 1) {
 			++numMerges;
 		}
 		// Check to see if the input vector size is a power of 2, if not we will
 		// need last merge pass
-		int vecPow2 = (in.size() & (in.size() - 1));
+		size_t vecPow2 = (in.size() & (in.size() - 1));
 		numMerges += in.size() > 0 ? 1 : 0;
 
 		for (int pass = 1; pass <= numMerges; ++pass) {
-			int srcLogicalBlockSize = localRange << (pass - 1);
+			size_t srcLogicalBlockSize = localRange << (pass - 1);
 
 
 			if ((pass & 0x1) > 0) {

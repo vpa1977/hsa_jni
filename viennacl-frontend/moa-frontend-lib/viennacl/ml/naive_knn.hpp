@@ -227,17 +227,17 @@ namespace knn
 	{
 	public:
 		sort_strategy(bool need_distances) : need_distances_(need_distances) {}
-		void set(size_t size, const viennacl::context& ctx) = 0;
-		const std::vector<int>& sort(viennacl::vector<NumericType>& distances) = 0;
+		virtual void set(size_t size, const viennacl::context& ctx) = 0;
+		virtual void sort(viennacl::vector<NumericType>& distances) = 0;
 		std::vector<int>& indices() { return cpu_indices_; }
-		std::vector<NumericType> distances() { assert(need_distances_) return cpu_distances_; }
+		std::vector<NumericType> distances() { assert(need_distances_); return cpu_distances_; }
 	protected:
 		void cpu_sort(viennacl::vector<NumericType>& distances)
 		{
-			for (size_t i = 0; i != cpu_indices_.size(); ++i) cpu_indices_[i] = i;
+			for (size_t i = 0; i != cpu_indices_.size(); ++i) cpu_indices_[i] = (int)i;
 			viennacl::copy(distances, cpu_distances_);
 			std::sort(cpu_indices_.begin(), cpu_indices_.end(),
-				[&cpu_distances_](size_t i1, size_t i2) {return cpu_distances_[i1] < cpu_distances_[i2]; });
+				[this](size_t i1, size_t i2) {return cpu_distances_[i1] < cpu_distances_[i2]; });
 			if (need_distances_)
 				std::sort(cpu_distances_.begin(), cpu_distances_.end());
 		}
@@ -302,17 +302,15 @@ namespace knn
 			sort_strategy<NumericType>& sorter,
 			viennacl::context& ctx) :
 			context_(ctx),
-			class_index_(class_index), 
 			attribute_map_(attribute_map), 
 			distance_function_(distance_function), 
 			sort_strategy_(sorter), 
-			options_(options), 
+			options_(options)
 		{}
 
 		void train(const viennacl::vector<NumericType>& data, const std::vector<NumericType> class_values,const std::vector<NumericType> weights)
 		{
 			distance_function_.set(data);
-			sorter_ = merge_sorter<NumericType>(data.size(), viennacl::traits::context(data));
 			distances_ = viennacl::vector<NumericType>(data.size(), viennacl::traits::context(data));
 			class_values_ = class_values;
 			weights_ = weights;
@@ -326,15 +324,15 @@ namespace knn
 			//
 			double total = 0, weight;
 			std::vector<int>& cpu_indices = sort_strategy_.indices();
-			std::vector<NumericType> cpu_distance = sort_strategy_.distances();
+			std::vector<NumericType>& cpu_distance = sort_strategy_.distances();
 			std::vector<double> distribution(options_.num_classes_);
 			/*WEKA distributionForInstance()*/
 			// Set up a correction to the estimator
 			if (options_.num_classes_ == atNOMINAL)
 			{
 				for (int i = 0; i < options_.num_classes_; i++)
-					distribution[i] = 1 / std::max(1, distance_function_.num_instances());
-				total = (double)options_.num_classes_ / std::max(1, distance_function_.num_instances());
+					distribution[i] = 1.0f / (1.0f> distance_function_.num_instances() ? 1.0f : distance_function_.num_instances());
+				total = (double)options_.num_classes_ / (1 > distance_function_.num_instances() ? 1 : distance_function_.num_instances());
 			}
 
 			for (int i = 0; i < options_.k_; i++) {
@@ -369,13 +367,11 @@ namespace knn
 
 
 	private:
-		merge_sorter<NumericType> sorter_;
 		viennacl::context& context_;
-		int class_index_;
 		viennacl::vector<int> attribute_map_;
 		viennacl::vector<NumericType> distances_;
-		normalizable_distance<NumericType> distance_function_;
-		sort_strategy<NumericType> sort_strategy_;
+		normalizable_distance<NumericType>& distance_function_;
+		sort_strategy<NumericType>& sort_strategy_;
 		knn_options options_;
 		std::vector<NumericType> class_values_;
 		std::vector<NumericType> weights_;

@@ -30,9 +30,8 @@ public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
     private int m_batch_size;
     private boolean m_native_init = false;
     private SlidingWindow m_sliding_window;
-    private int m_num_classes;
-    private int m_class_index;
     private int m_k;
+    private int m_distance_weighting;
     private ZeroR m_default_classifier = new ZeroR();
 
     public IntOption neighboursNumber = new IntOption("neighbourNumber", 'n', "Number of neighbours to use", 16, 1, Integer.MAX_VALUE);
@@ -44,17 +43,17 @@ public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
    
     
 
-    private native double[] getVotesForDenseInstance(DenseOffHeapBuffer buffer, DenseOffHeapBuffer model);
+    private native double[] getVotesForDenseInstance(DenseOffHeapBuffer buffer);
 
      /**
      * initialize native context the native context pointer will be stored in
      * m_native_context which should provide sufficient storage space
      *
-     * @param size
-     * @param loss
-     * @param nominal
      */
-    private native void initNative(int num_attr, int batch_size, int class_index, int[] attributeTypes);
+    private native void initNative(int num_attr, int batch_size, int class_index, int[] attributeTypes, int num_classes, int k, int distance_weighting);
+    
+    
+    private native void train(DenseOffHeapBuffer model);
 
     /**
      * dispose native context and all natively allocated structures
@@ -78,11 +77,22 @@ public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
         if (inst == null) {
             return null;
         }
+        if (!m_sliding_window.isReady())
+        {
+			try {
+				return m_default_classifier.distributionForInstance(inst);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+        }
+        
         DenseOffHeapBuffer buffer = new DenseOffHeapBuffer(1, inst.numAttributes());
         buffer.begin();
         buffer.set(inst, 0);
         buffer.commit();
-        double[] res = getVotesForDenseInstance(buffer, m_model);
+        double[] res = getVotesForDenseInstance(buffer);
         buffer.release();
         return res;
     }
@@ -90,6 +100,8 @@ public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
     @Override
     public void resetLearningImpl() {
         m_batch_size = slidingWindowSize.getValue();
+        m_k = neighboursNumber.getValue();
+        m_distance_weighting = distanceWeightingOption.getChosenIndex();
         shutdown();
     }
     
@@ -100,8 +112,13 @@ public class NaiveKnn extends AbstractClassifier implements NativeClassifier {
         }
 
         if (!m_native_init) {
-            initNative(inst.numAttributes(), m_batch_size, inst.classIndex(), attributeTypes(inst.dataset()));
+            initNative(inst.numAttributes(), m_batch_size, inst.classIndex(), 
+            		attributeTypes(inst.dataset()),  inst.dataset().numClasses(), 
+            		m_k, m_distance_weighting);
             m_sliding_window = new SlidingWindow(m_batch_size, inst.dataset().numAttributes());
+            try {
+				m_default_classifier.buildClassifier(inst.dataset());
+			} catch (Exception e) {	}
             m_native_init = true;
         }
         m_sliding_window.update(inst);
