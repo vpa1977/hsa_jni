@@ -109,7 +109,7 @@ int instance_interface::get_num_attributes()
 
 bool instance_interface::is_missing( int index)
 {
-	return env_->CallBooleanMethod(instance_, is_missing_method_, index);
+	return env_->CallBooleanMethod(instance_, is_missing_method_, index) ? true : false;
 }
 
 

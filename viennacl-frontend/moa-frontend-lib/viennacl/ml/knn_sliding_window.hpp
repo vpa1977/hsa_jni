@@ -18,7 +18,7 @@ namespace knn
 {
 	struct dense_sliding_window
 	{
-		dense_sliding_window(viennacl::context& ctx, int num_attributes, int window_size) :
+		dense_sliding_window(viennacl::context& ctx, int num_attributes, int window_size, int class_index) :
 			    m_row_index(0),
 				m_attribute_types(num_attributes,ctx),
 				m_values_window(window_size,num_attributes,ctx),

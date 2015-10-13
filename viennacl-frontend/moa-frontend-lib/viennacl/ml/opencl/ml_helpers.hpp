@@ -14,10 +14,13 @@
 #include "viennacl/ocl/kernel.hpp"
 #include "viennacl/scalar.hpp"
 #include "viennacl/vector.hpp"
+#include "viennacl/linalg/vector_operations.hpp"
 #include "viennacl/tools/tools.hpp"
 #include "viennacl/linalg/opencl/common.hpp"
 #include "viennacl/ml/opencl/ml_kernels.hpp"
-#include "viennacl/ml/knn_sliding_window.hpp"
+#include "viennacl/ml/opencl/min_max.hpp"
+#include "viennacl/ml/opencl/distance.hpp"
+#include "viennacl/ml/naive_knn.hpp"
 
 #define KAVERI_GLOBAL_SIZE (4*6+1)*256
 
@@ -27,6 +30,8 @@ namespace ml
 {
 namespace opencl
 {
+	
+
 	template <typename T>
 	double reduce( viennacl::vector_base<T>& to_reduce)
 	{
@@ -56,7 +61,7 @@ namespace opencl
 
 		ml_helper_kernels<viennacl::ocl::context>::init(ctx);
 		viennacl::ocl::kernel& sgd_map_prod_value = ctx.get_kernel(ml_helper_kernels<viennacl::ocl::context>::program_name(), "sgd_map_prod_value");
-		static int  global_size = (ctx.current_device().max_compute_units() *4 +1) * ctx.current_device().max_work_group_size();
+		static size_t  global_size = (ctx.current_device().max_compute_units() *4 +1) * ctx.current_device().max_work_group_size();
 		sgd_map_prod_value.local_work_size(0, ctx.current_device().max_work_group_size());
 		sgd_map_prod_value.global_work_size(0, global_size);
 
@@ -100,9 +105,9 @@ namespace opencl
 		viennacl::ocl::context & ctx = const_cast<viennacl::ocl::context &>(viennacl::traits::opencl_handle(weights).context());
 		ml_helper_kernels<viennacl::ocl::context>::init(ctx);
 		viennacl::ocl::kernel& update_by_factor_kernel = ctx.get_kernel(ml_helper_kernels<viennacl::ocl::context>::program_name(), "sgd_update_weights");
-		static int global_size = (ctx.current_device().max_compute_units() *4 +1) * ctx.current_device().max_work_group_size();
+		static size_t global_size = (ctx.current_device().max_compute_units() *4 +1) * ctx.current_device().max_work_group_size();
 		update_by_factor_kernel.local_work_size(0, ctx.current_device().max_work_group_size());
-		int work_size = batch.size1();
+		size_t work_size = batch.size1();
 		if (ctx.current_device().max_work_group_size() >(size_t) work_size)
 			work_size = ctx.current_device().max_work_group_size();
 		if (work_size > global_size)
@@ -148,47 +153,84 @@ namespace opencl
 
 	struct knn_kernels
 	{
-		static void bitonic_sort(viennacl::vector<double>& result)
-		{}
-
-
-		static void calc_distance(viennacl::vector<double>& result,const viennacl::ml::knn::dense_sliding_window& sliding_window, int start_row, int end_row, const viennacl::vector<double>& sample)
+		template <typename NumericT>
+		static void min_max(size_t num_attributes, size_t class_index, viennacl::vector<NumericT>& source, viennacl::vector<NumericT>& min_val, viennacl::vector<NumericT>& max_val)
 		{
-			const viennacl::matrix<double>& samples = sliding_window.m_values_window;
-			const viennacl::vector<int>& types =  sliding_window.m_attribute_types;
-
-			viennacl::ocl::context & ctx = const_cast<viennacl::ocl::context &>(viennacl::traits::opencl_handle(samples).context());
-
-			ml_helper_kernels<viennacl::ocl::context>::init(ctx);
-
-			static viennacl::ocl::kernel& calc_distance_kernel = ctx.get_kernel(ml_helper_kernels<viennacl::ocl::context>::program_name(), "knn_calc_distance");
-			static int global_size = (ctx.current_device().max_compute_units() *4 +1) * ctx.current_device().max_work_group_size();
-			calc_distance_kernel.local_work_size(0, ctx.current_device().max_work_group_size());
-			calc_distance_kernel.global_work_size(0,global_size );
-
-			//double* elements,double * factors, int* rows, int * columns)
-			viennacl::ocl::enqueue(calc_distance_kernel(
-					start_row, // rows
-					end_row,
-					types.size(),
-					samples,
-					static_cast<cl_uint>(samples.start1()),
-					static_cast<cl_uint>(samples.start2()),
-                                        static_cast<cl_uint>(samples.internal_size1()),
-					static_cast<cl_uint>(samples.internal_size2()),
-					static_cast<cl_uint>(samples.size1()),
-					static_cast<cl_uint>(samples.size2()),
-					static_cast<cl_uint>(samples.stride1()),
-					static_cast<cl_uint>(samples.stride2()),
-					sliding_window.m_min_range,
-					sliding_window.m_max_range,
-					types,
-					sample, // row indices vector
-					result
-					));
-
-
+			viennacl::ocl::context & ctx = const_cast<viennacl::ocl::context &>(viennacl::traits::opencl_handle(source).context());
+			min_max_kernel<NumericT, viennacl::ocl::context>::init(ctx);
+			static viennacl::ocl::kernel& min_max = ctx.get_kernel(min_max_kernel<NumericT, viennacl::ocl::context>::program_name(), "min_max_kernel");
+			size_t global_size = num_attributes * 256;
+			min_max.local_work_size(0, 256);
+			min_max.global_work_size(0, global_size);
+			viennacl::ocl::enqueue(min_max((int)class_index, (int)num_attributes, (int)(source.size() / num_attributes), source, min_val, max_val));
 		}
+
+		template <typename NumericT>
+		static void distance_1(size_t num_attributes, const viennacl::vector<NumericT>&  input, const viennacl::vector<NumericT>&  samples,
+			const viennacl::vector<NumericT>&  range_min, const viennacl::vector<NumericT>&  range_max, 
+			viennacl::vector<NumericT>&  range_min_upd, viennacl::vector<NumericT>&  range_max_upd,
+			const viennacl::vector<int>&  attribute_map, viennacl::vector<NumericT>&  result)
+		{
+			viennacl::ocl::context & ctx = const_cast<viennacl::ocl::context &>(viennacl::traits::opencl_handle(input).context());
+			distance_kernel<NumericT, viennacl::ocl::context>::init(ctx);
+			static viennacl::ocl::kernel& distance_1 = ctx.get_kernel(distance_kernel<NumericT, viennacl::ocl::context>::program_name(), "square_distance");
+			static viennacl::ocl::kernel& bounds = ctx.get_kernel(distance_kernel<NumericT, viennacl::ocl::context>::program_name(), "update_bounds");
+			assert(samples.size() > 0);
+			const size_t min_local_size = 64;
+			size_t local_size = 256;
+			size_t work_size = samples.size() / num_attributes;
+			if  (work_size % local_size)
+				work_size = (work_size / local_size) * local_size + local_size;
+			distance_1.local_work_size(0, local_size);
+			distance_1.global_work_size(0, work_size);
+			
+			local_size = std::min((size_t)256, num_attributes);
+			work_size = num_attributes;
+			if (local_size %  min_local_size)
+				local_size = (local_size / min_local_size) * min_local_size + min_local_size;
+			if (work_size % local_size)
+				work_size = (work_size / local_size) * local_size + local_size;
+			bounds.local_work_size(0,local_size);
+			bounds.global_work_size(0,work_size);
+
+			bounds((int)num_attributes, range_min, range_max, input, range_min_upd, range_max_upd).enqueue();
+			distance_1(input, samples, range_min_upd, range_max_upd, attribute_map, result, (int) (samples.size() / num_attributes), (int)num_attributes).enqueue();
+		}
+
+		template <typename NumericT>
+		static void distance_2(size_t num_attributes, const viennacl::vector<NumericT>&  input, const viennacl::vector<NumericT>&  samples,
+			const viennacl::vector<NumericT>&  range_min, const viennacl::vector<NumericT>&  range_max, 
+			viennacl::vector<NumericT>&  range_min_upd, viennacl::vector<NumericT>&  range_max_upd,
+			const viennacl::vector<int>&  attribute_map, viennacl::vector<NumericT>&  result)
+		{
+			viennacl::ocl::context & ctx = const_cast<viennacl::ocl::context &>(viennacl::traits::opencl_handle(input).context());
+			const size_t min_local_size = 64;
+			assert(samples.size() > 0);
+			size_t local_size = std::min(num_attributes, (size_t) 256);
+			if (local_size % min_local_size)
+				local_size = (local_size / min_local_size) * min_local_size + min_local_size;
+			viennacl::ocl::local_mem scratch(local_size);
+			size_t work_size = (samples.size() / num_attributes) * local_size;
+			distance_kernel<NumericT, viennacl::ocl::context>::init(ctx);
+			static viennacl::ocl::kernel& distance_2 = ctx.get_kernel(distance_kernel<NumericT, viennacl::ocl::context>::program_name(), "square_distance_one_wg");
+			static viennacl::ocl::kernel& bounds = ctx.get_kernel(distance_kernel<NumericT, viennacl::ocl::context>::program_name(), "update_bounds");
+			distance_2.local_work_size(0, local_size);
+			distance_2.global_work_size(0, work_size);
+
+			local_size = std::min((size_t)256, num_attributes);
+			work_size = num_attributes;
+			if (local_size %  min_local_size)
+				local_size = (local_size / min_local_size) * min_local_size + min_local_size;
+			if (work_size % local_size)
+				work_size = (work_size / local_size) * local_size + local_size;
+			bounds.local_work_size(0, local_size);
+			bounds.global_work_size(0, work_size);
+			bounds((int)num_attributes, range_min, range_max, input, range_min_upd, range_max_upd).enqueue();
+
+			distance_2(input, samples, range_min_upd, range_max_upd, attribute_map, result, (int)(samples.size() / num_attributes),(int) num_attributes, scratch ).enqueue();
+		}
+
+
 	};
 }
 

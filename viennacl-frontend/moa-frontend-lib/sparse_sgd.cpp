@@ -35,11 +35,11 @@ static jdoubleArray votesForInstance(JNIEnv* env, const viennacl::vector<double>
 
 	bool is_nominal_value = sgd_impl->is_nominal();
 	size_t result_size = is_nominal_value ? 2 : 1;
-	jdoubleArray d = env->NewDoubleArray(result_size);
+	jdoubleArray d = env->NewDoubleArray((jsize)result_size);
 
 	std::vector<double> result = sgd_impl->get_votes_for_instance(instance);
 	assert(result.size() == result_size);
-	env->SetDoubleArrayRegion(d,0, result_size, &result[0]);
+	env->SetDoubleArrayRegion(d,0, (jsize)result_size, &result[0]);
 	return d;
 
 }
@@ -68,8 +68,9 @@ JNIEXPORT void JNICALL Java_org_moa_gpu_SparseSGD_initNative
 	static jclass sgd_class = env->FindClass(thisClazz);
 	static jfieldID context_field = env->GetFieldID(sgd_class, "m_native_context", "J");
 	assert(context_field != 0);
+	bool is_nominal = nominal ? true : false;
 	viennacl::ml::sgd* sgd_impl =  new viennacl::ml::sgd(attribute_size, window_size, (viennacl::ml::sgd::LossFunction)loss, get_global_context(),
-			learning_rate, lambda, nominal);
+			learning_rate, lambda, is_nominal);
 	env->SetLongField(sgd, context_field, (jlong)sgd_impl);
 }
 

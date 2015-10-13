@@ -19,8 +19,8 @@ struct dense_offheap_buffer {
         static jfieldID rows_field = env->GetFieldID(clazz, "m_rows", "J");
         
         cl_int err;
-        m_size = env->GetLongField(buffer, size_field);
-        long rows = env->GetLongField(buffer, rows_field);
+        m_size = (long)env->GetLongField(buffer, size_field);
+        long rows = (long)env->GetLongField(buffer, rows_field);
         m_class_size = rows * sizeof (value_type);
         void* class_data = (void*) env->GetLongField(buffer, classes_field);
         void* data = (void*) env->GetLongField(buffer, field);
@@ -143,7 +143,11 @@ struct sparse_offheap_buffer {
     }
 
     viennacl::compressed_matrix<value_type> values() {
-        return viennacl::compressed_matrix<value_type>(m_row_mem, m_col_mem, m_element_mem, m_rows, m_cols, m_elements);
+#ifdef VIENNAC_WITH_HSA
+			return viennacl::compressed_matrix<value_type>(m_row_mem, m_col_mem, m_element_mem, m_rows, m_cols, m_elements);
+#else
+      return viennacl::compressed_matrix<value_type>(m_row_mem, m_col_mem, m_element_mem, m_rows, m_cols, m_elements, get_global_context());
+#endif
     }
 #ifdef VIENNACL_WITH_HSA
     void * m_class_mem;

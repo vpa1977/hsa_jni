@@ -85,7 +85,7 @@ public:
 
 		for (size_t row = 0; row < class_values.size(); ++row)
 		{
-			int offset = row*weights_.size();
+			size_t offset = row*weights_.size();
 			viennacl::range r(offset, offset+weights_.size());
 
 			viennacl::vector_range< viennacl::vector<double> > next(batch, r);
@@ -101,7 +101,7 @@ public:
 				decay_weights_cpu(class_values.size());
 			//	system_clock::time_point t4 = system_clock::now();
 				//viennacl::ml::opencl::dense_sgd_update_weights<double>(row, nominal_, learning_rate_, bias_, loss_, class_values, prod_result_, next, weights_);
-				update_weights_cpu(nominal_, class_values, prod_result_, next, row);
+				update_weights_cpu(nominal_, class_values, prod_result_, next, (int)row);
 		//		system_clock::time_point t5 = system_clock::now();
 
 				/*duration<double> time_span1 = duration_cast<duration<double>>(t2 - t1);

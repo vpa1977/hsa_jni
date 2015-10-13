@@ -30,7 +30,7 @@
 #endif
 
 #ifdef VIENNACL_WITH_OPENCL
-#include <viennacl/ml/opencl/ml_helpers.hpp>
+#include "viennacl/ml/opencl/ml_helpers.hpp"
 #endif
 
 

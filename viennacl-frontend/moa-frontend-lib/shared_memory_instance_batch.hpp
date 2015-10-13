@@ -19,11 +19,8 @@ struct shared_memory_instance_batch
 		m_num_rows(num_rows), m_num_columns(num_columns),
 		m_index(0), m_instance_values(num_rows*num_columns), m_gpu_instance_values(num_rows*num_columns), m_class_values(num_rows), m_ctx(ctx)
 	{
-		cl_int err;
 		const cl_context& cl_ctx = ctx.opencl_context().handle().get();
 		m_ptr = clSVMAlloc(cl_ctx, CL_MEM_READ_WRITE, num_rows*num_columns * sizeof(double), sizeof(double));
-
-
 		clear();
 
 	}

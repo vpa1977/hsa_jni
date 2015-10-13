@@ -22,9 +22,12 @@ JNIEXPORT jlong JNICALL Java_org_moa_gpu_bridge_DenseOffHeapBuffer_allocate
     return (jlong)ptr;
 #else    
 	cl_int err;
-	const cl_context& cl_ctx = get_global_context().opencl_context().handle().get();
+	viennacl::ocl::context& ctx = get_global_context().opencl_context();
+	cl_device_id device_id = ctx.current_device().id();
+	const cl_context& cl_ctx = ctx.handle().get();
 	void * ptr = clSVMAlloc(cl_ctx, CL_MEM_READ_WRITE, size_in_bytes, 0);
-	cl_command_queue queue = get_global_context().opencl_context().get_queue(get_global_context().opencl_context().current_device().id(), DATA_TRANSFER_QUEUE).handle().get();
+	viennacl::ocl::command_queue& cmd_queue = ctx.get_queue(device_id, DATA_TRANSFER_QUEUE);
+	cl_command_queue queue = cmd_queue.handle().get();
 	err = clEnqueueSVMMap(queue, CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, ptr, size_in_bytes, 0, NULL, NULL);
 	VIENNACL_ERR_CHECK(err);
 	return (jlong)ptr;

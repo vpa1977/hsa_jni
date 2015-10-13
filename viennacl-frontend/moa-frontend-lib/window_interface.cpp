@@ -17,7 +17,7 @@ std::vector<instance_interface> get_window(JNIEnv* env, jobject window)
 	std::vector<instance_interface> result;
 	for (size_t i = 0 ; i < len ; ++i)
 	{
-		jobject instance = env->GetObjectArrayElement(array, i);
+		jobject instance = env->GetObjectArrayElement(array, (jsize)i);
 		result.push_back(instance_interface(env,instance));
 	}
 	return result;

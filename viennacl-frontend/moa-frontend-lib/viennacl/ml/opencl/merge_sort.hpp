@@ -1,5 +1,5 @@
-#ifndef MERGE_SORT_HPP
-#define MERGE_SORT_HPP
+#ifndef VIENNACL_ML_OPENCL_MERGE_SORT_HPP
+#define VIENNACL_ML_OPENCL_MERGE_SORT_HPP
 
 #include <sstream>
 #include <stdint.h>
@@ -520,7 +520,7 @@ struct merge_sorter
 	}
 
 
-	viennacl::vector<unsigned int> merge_sort(viennacl::vector<basic_type>& in)
+	const viennacl::vector<unsigned int>& merge_sort(viennacl::vector<basic_type>& in)
 	{
 		
 		int wg_size = 128;

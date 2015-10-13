@@ -243,36 +243,6 @@ namespace viennacl
 						"}\n";
 					code.append(dense_sgd_update_weights);
 
-					const char* const knn_calc_distance =
-							"\n__kernel void knn_calc_distance(int start_row, int end_row, ulong instance_length, __global double* samples,"
-							"uint samples_start1, uint samples_start2, uint samples_internal_size1, uint samples_internal_size2, uint samples_size1, "
-							"uint samples_size2, uint samples_stride1, uint samples_stride2, "
-							" __global double* min, __global double* max, __global int* types, __global double* test, __global double* result)"
-							"{\n"
-							" 	for (int id = get_global_id(0) + start_row;id < end_row; id += get_global_size(0) )"
-							" 	{"
-							"       double cur = 0;"
-							"		for(int offset = id; offset < id+instance_length ; ++offset)"
-							"       {"
-							"           int idx = offset -id;"
-							"           double diff = max[idx] - min[idx];"
-							"           int loc =  IDX(id,idx,samples_start1, samples_stride1, samples_start2, samples_stride2, samples_internal_size2);"
-							"			double d =  (samples[loc]  - test[idx])/diff;"
-							"			if (types[idx] > 0 ) "
-							"				 cur += d != 0 ? 1 : 0;"
-							"			else"
-							"				 cur += d*d; "
-							"		}"
-							"		result[id-start_row] = cur; "
-							" 	} "
-							"}\n" ;
-
-					code.append(knn_calc_distance);
-
-
-
-					//code.append(bitonic_sort);
-
 					ctx.add_program(code, program_name());
 
 

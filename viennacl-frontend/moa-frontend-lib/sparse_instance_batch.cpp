@@ -18,7 +18,7 @@ void sparse_instance_batch::commit()
 	{
 		sparse_storage& p_row = m_individual_instances.at(i);
 		row_jumper.at(i) = accumulator;
-		accumulator += p_row.m_indices.size();
+		accumulator += (int)p_row.m_indices.size();
 		class_data.at(i)= p_row.m_class_value;
 	}
 	row_jumper.at(m_num_rows) = accumulator;

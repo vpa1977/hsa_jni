@@ -1,2 +1,3 @@
 *.dll
 viennacl-frontend/moa-frontend/moa-frontend-lib.dll
+*.log
