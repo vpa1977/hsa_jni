@@ -23,6 +23,7 @@ import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import weka.core.neighboursearch.ZOrder;
 import weka.core.neighboursearch.ZOrderInstance;
+import weka.core.neighboursearch.ZOrderSearch;
 
 /**
  *
@@ -55,7 +56,7 @@ public class TestZOrder {
         loader.setSource(new FileInputStream("F:\\weka_377\\data\\cpu.arff"));
         loader.getStructure();
         Instances dataset = loader.getDataSet();
-        ZOrder order = new ZOrder(1, dataset.numAttributes());
+        ZOrder order = new ZOrder(true,1, dataset.numAttributes());
         ArrayList<ZOrderInstance> result = order.createZOrder(dataset,0);
         for (ZOrderInstance inst : result)
         {
@@ -63,11 +64,25 @@ public class TestZOrder {
         }
         System.out.println("*");
     }
+   
+   
+   @Test
+   public void dumpDistanceList() throws Throwable
+   {
+       ArffLoader loader = new ArffLoader();
+       loader.setSource(new FileInputStream("F:\\weka_377\\data\\cpu.arff"));
+       loader.getStructure();
+       Instances dataset = loader.getDataSet();
+       ZOrderSearch search = new ZOrderSearch(dataset);
+       search.buildDistanceLists();
+       System.out.println("*");
+   }
+
     
     @Test
     public void testInterleaving()  throws Throwable
     {
-        ZOrder order = new ZOrder(0,0) {
+        ZOrder order = new ZOrder(true,0,0) {
             protected long doubleAsLong(double input)
             {
                 return Double.doubleToLongBits(input);

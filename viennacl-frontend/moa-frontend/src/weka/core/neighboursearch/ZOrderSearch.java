@@ -55,6 +55,13 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 	public void setUseReduction(boolean r) { m_UseReduction = r; }
 	public boolean getUseReduction() { return m_UseReduction; }
 
+	/** 
+	 * Add random vector to the instance
+	 */
+	private boolean m_UseRandomShift = false;
+	public void setUseRandomShift(boolean r) { m_UseRandomShift = r; }
+	public boolean getUseRandomShift() { return m_UseRandomShift; }
+
 	/**
 	 * Constructor.
 	 */
@@ -79,8 +86,19 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 
 	private ZOrder createOrder(Instances insts) {
 		return m_UseReduction
-				? new ZOrder(insts.numAttributes(), m_NumSearchCurves, insts.classIndex(), m_NumDimensions)
-				: new ZOrder(insts.numAttributes(), m_NumSearchCurves);
+				? new ZOrder(m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves, insts.classIndex(), m_NumDimensions)
+				: new ZOrder(m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves);
+	}
+	
+	public void buildDistanceLists() 
+	{
+				
+		for (int i = 0; i < m_NumSearchCurves; ++i) {
+			Instance root = m_instance_list[i].get(0).m_instance;
+			for (int idx = 0 ; idx < m_instance_list[i].size() ; ++idx)
+				System.out.println( m_DistanceFunction.distance(root, m_instance_list[i].get(idx).m_instance));
+			System.out.println("----");
+		}
 	}
 
 	@Override

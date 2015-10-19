@@ -24,20 +24,23 @@ public class ZOrder implements Serializable {
 	
 	private Instance[] m_randomizers;
 	private int m_num_dimensions;
-   private ZOrderFold m_dimension_reduction;
+	private ZOrderFold m_dimension_reduction;
+	private boolean m_random_shift;
 
     
-	public ZOrder(int num_attributes, int num_random_vectors)
+	public ZOrder(boolean random_shift, int num_attributes, int num_random_vectors)
 	{
 		init(num_attributes, num_random_vectors);
 		m_num_dimensions = num_attributes-1;
+		m_random_shift = random_shift;
 	}
 	
-	public ZOrder(int num_attributes, int num_random_vectors, int class_index, int num_dimensions)
+	public ZOrder(boolean random_shift, int num_attributes, int num_random_vectors, int class_index, int num_dimensions)
 	{
 		init(num_attributes, num_random_vectors);
 		m_num_dimensions = num_dimensions;
 		m_dimension_reduction = new ZOrderFold(class_index, num_attributes, num_dimensions);
+		m_random_shift = random_shift;
 	}
 	
 	
@@ -73,11 +76,11 @@ public class ZOrder implements Serializable {
     	{
             if (attribute >= instance.classIndex())
                 attribute += 1;
-            return instance.value(attribute) + rot > m_randomizers.length ? m_randomizers[rot].value(attribute) : 0;
+            return instance.value(attribute) + rot > m_randomizers.length && m_random_shift ? m_randomizers[rot].value(attribute) : 0;
     	}
     	else
     	{
-    		return m_dimension_reduction.fold(attribute,instance)+ rot > m_randomizers.length ? m_randomizers[rot].value(attribute) : 0;
+    		return m_dimension_reduction.fold(attribute,instance)+ rot > m_randomizers.length && m_random_shift ? m_randomizers[rot].value(attribute) : 0;
     	}
     }
     
@@ -98,8 +101,6 @@ public class ZOrder implements Serializable {
            int attribute =  bit % num_attributes;
            
            int offset = bit / num_attributes;
-           if (attribute >= instance.classIndex())
-               attribute += 1;
            double attr_value =fold(attribute, instance, rot);
            long long_value = doubleAsLong(attr_value);
            long bit_value =  (long_value & (1 << offset)) >> offset;
