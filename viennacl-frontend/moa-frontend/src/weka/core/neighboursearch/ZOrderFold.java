@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import weka.core.Instance;
+import weka.core.NormalizableDistance;
 
 public class ZOrderFold  implements Serializable{
 	private int m_num_attributes;
@@ -36,13 +37,13 @@ public class ZOrderFold  implements Serializable{
 		}
 	}
 	
-	public double fold(int dim, Instance attribute)
+	public double fold(double[][] ranges, int dim, Instance attribute)
 	{
 		ArrayList<Integer> list = m_fold[dim];
 		double acc =0;
 		for (Integer i : list)
 		{
-			acc += attribute.value(i);
+			acc += (attribute.value(i) - ranges[i][NormalizableDistance.R_MIN])/ranges[i][NormalizableDistance.R_WIDTH];
 		}
 		return acc;
 	}

@@ -56,7 +56,7 @@ public class TestZOrder {
         loader.setSource(new FileInputStream("F:\\weka_377\\data\\cpu.arff"));
         loader.getStructure();
         Instances dataset = loader.getDataSet();
-        ZOrder order = new ZOrder(true,1, dataset.numAttributes());
+        ZOrder order = new ZOrder(null,true,1, dataset.numAttributes());
         ArrayList<ZOrderInstance> result = order.createZOrder(dataset,0);
         for (ZOrderInstance inst : result)
         {
@@ -73,7 +73,11 @@ public class TestZOrder {
        loader.setSource(new FileInputStream("F:\\weka_377\\data\\cpu.arff"));
        loader.getStructure();
        Instances dataset = loader.getDataSet();
-       ZOrderSearch search = new ZOrderSearch(dataset);
+       ZOrderSearch search = new ZOrderSearch();
+       search.setNumSearchCurves(1);
+       search.setUseReduction(false);
+       search.setUseRandomShift(false);
+       search.setInstances(dataset);
        search.buildDistanceLists();
        System.out.println("*");
    }
@@ -82,7 +86,7 @@ public class TestZOrder {
     @Test
     public void testInterleaving()  throws Throwable
     {
-        ZOrder order = new ZOrder(true,0,0) {
+        ZOrder order = new ZOrder(null,true,0,0) {
             protected long doubleAsLong(double input)
             {
                 return Double.doubleToLongBits(input);

@@ -14,6 +14,7 @@ import java.util.Vector;
 
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.NormalizableDistance;
 import weka.core.Option;
 import weka.core.Utils;
 
@@ -86,8 +87,8 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 
 	private ZOrder createOrder(Instances insts) {
 		return m_UseReduction
-				? new ZOrder(m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves, insts.classIndex(), m_NumDimensions)
-				: new ZOrder(m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves);
+				? new ZOrder((NormalizableDistance)m_DistanceFunction, m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves, insts.classIndex(), m_NumDimensions)
+				: new ZOrder((NormalizableDistance)m_DistanceFunction, m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves);
 	}
 	
 	public void buildDistanceLists() 
