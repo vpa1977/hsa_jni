@@ -1,20 +1,13 @@
 package org.moa.gpu;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import org.moa.gpu.bridge.DenseOffHeapBuffer;
 import org.moa.gpu.bridge.NativeClassifier;
 import org.moa.gpu.bridge.NativeDenseInstance;
-import org.moa.gpu.bridge.NativeDenseWindow;
-import org.moa.gpu.bridge.NativeInstance;
 
 import moa.classifiers.AbstractClassifier;
 import moa.core.Measurement;
 import moa.options.IntOption;
 import moa.options.MultiChoiceOption;
-import org.moa.gpu.bridge.DenseOffHeapBuffer;
 import weka.classifiers.rules.ZeroR;
 import weka.core.Instance;
 import weka.core.Instances;

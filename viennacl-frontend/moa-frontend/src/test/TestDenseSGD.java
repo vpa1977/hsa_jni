@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.moa.gpu.DenseSGD;
 import org.moa.gpu.FastRandomTreeGenerator;
-import org.moa.gpu.NativeDenseInstanceStreamGenerator;
 
 import weka.core.Instance;
 

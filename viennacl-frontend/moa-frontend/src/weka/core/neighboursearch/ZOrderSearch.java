@@ -24,6 +24,13 @@ import weka.core.Utils;
  */
 public class ZOrderSearch extends NearestNeighbourSearch {
 
+	/**
+	 * 
+	 */
+	
+	private static final long serialVersionUID = 1L;
+	private NormalizedData m_normalized_data;
+	private IProjection m_random_projection;
 	private ZOrder m_order;
 	private ArrayList<ZOrderInstance>[] m_instance_list;
 	private double[] m_Distances;
@@ -76,20 +83,15 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 	 * @param insts
 	 *            The set of instances that constitute the neighbourhood.
 	 */
-	public ZOrderSearch(Instances insts) {
+	public ZOrderSearch(Instances insts) throws Exception {
 		super(insts);
-		m_order = createOrder(insts);
+		m_order = new ZOrder();
 		m_DistanceFunction.setInstances(insts);
-		m_instance_list = new ArrayList[m_NumSearchCurves];
-		for (int i = 0; i < m_NumSearchCurves; ++i)
-			m_instance_list[i] = m_order.createZOrder(insts, i);
+		m_normalized_data = new NormalizedData((NormalizableDistance)m_DistanceFunction);
+		m_normalized_data.update(insts);
+		m_random_projection = new RandomProjectionFold(insts, m_NumSearchCurves, m_NumDimensions);
 	}
 
-	private ZOrder createOrder(Instances insts) {
-		return m_UseReduction
-				? new ZOrder((NormalizableDistance)m_DistanceFunction, m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves, insts.classIndex(), m_NumDimensions)
-				: new ZOrder((NormalizableDistance)m_DistanceFunction, m_UseRandomShift, insts.numAttributes(), m_NumSearchCurves);
-	}
 	
 	public void buildDistanceLists() 
 	{
@@ -104,19 +106,22 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 
 	@Override
 	public Instance nearestNeighbour(Instance target) throws Exception {
-
+		buildZOrder();
 		double min = Double.MAX_VALUE;
 		Instance result = null;
 		for (int i = 0; i < m_NumSearchCurves; ++i) {
-			ZOrderInstance instance = new ZOrderInstance(m_order.interleave(target, i), target);
+			Instance norm = m_normalized_data.normalize(target);
+			Instance projected = m_random_projection.project(i,norm);
+			double[][] ranges = m_random_projection.getRanges(i);
+			ZOrderInstance instance = new ZOrderInstance(m_order.interleave(projected, m_random_projection.getDistance(i)), target);
 			int position = Math.abs(Collections.binarySearch(m_instance_list[i], instance));
 			int other = position < m_instance_list[i].size() ? position + 1 : position - 1;
-			double d1 = m_DistanceFunction.distance(target, m_instance_list[i].get(position).m_instance);
+			double d1 = m_DistanceFunction.distance(target, m_instance_list[i].get(position).m_instance, Double.POSITIVE_INFINITY, m_Stats);
 			if (d1 < min) {
 				min = d1;
 				result = m_instance_list[i].get(position).m_instance;
 			}
-			double d2 = m_DistanceFunction.distance(target, m_instance_list[i].get(other).m_instance);
+			double d2 = m_DistanceFunction.distance(target, m_instance_list[i].get(other).m_instance, Double.POSITIVE_INFINITY, m_Stats);
 			if (d2 < min) {
 				min = d2;
 				result = m_instance_list[i].get(other).m_instance;
@@ -127,13 +132,19 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 
 	@Override
 	public Instances kNearestNeighbours(Instance target, int kNN) throws Exception {
+		if (m_Stats != null)
+			m_Stats.searchStart();
+
 		double distance;
 		int firstkNN = 0;
+		buildZOrder();
 		MyHeap heap = new MyHeap(kNN);
 		ArrayList<Instance> candidates = new ArrayList<Instance>();
 		HashSet<Instance> duplicates = new HashSet<Instance>();
 		for (int i = 0; i < m_NumSearchCurves; ++i) {
-			ZOrderInstance instance = new ZOrderInstance(m_order.interleave(target, i), target);
+			Instance norm = m_normalized_data.normalize(target);
+			Instance projected = m_random_projection.project(i,norm);
+			ZOrderInstance instance = new ZOrderInstance(m_order.interleave(projected, m_random_projection.getDistance(i)), target);
 			int position = Math.abs(Collections.binarySearch(m_instance_list[i], instance));
 			firstkNN = search(target, heap,m_instance_list[i], position, true, firstkNN, kNN, candidates, duplicates);
 			firstkNN = search(target, heap,m_instance_list[i], position, false, firstkNN, kNN,  candidates, duplicates);
@@ -172,32 +183,46 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 	private int search(Instance target, MyHeap heap, ArrayList<ZOrderInstance> arrayList, int position,boolean up,  int firstkNN, int kNN, ArrayList<Instance> candidates, HashSet<Instance> skip) 
 		throws Exception
 	{
+		
+		buildZOrder();
 		double distance = 0;
 		int min = 0;
 		int max = arrayList.size();
 		if (up)
 		{
 			min = position;
+		//	max = Math.min(position + kNN, max);
 		}
 		else
 		{
-			max = position;
+			//min = Math.max(0, position-kNN);
+			max = Math.min(position, arrayList.size()-1);
 		}
 		
 		if (min < 0)
 			System.out.println("Br");
 		
-		
-		for (int i =  min; i < max; i++ )
+		double avg_distance = 0.0;
+		for (int i = up ?  min : max ; up ? i < max : i >= min; i = up ? i+1 : i-1 )
 		{
-			Instance inst = arrayList.get(i).m_instance;
+			Instance inst  = null;
+			try {
+				 inst = arrayList.get(i).m_instance;
+			}
+			catch (Throwable t) { 
+				t.printStackTrace(); 
+				}
 			if (skip.contains(inst))
 				continue;
 			skip.add(inst);
+		      if(m_Stats!=null) 
+		          m_Stats.incrPointCount();
+			
 			if (firstkNN < kNN) {
 				distance = m_DistanceFunction.distance(target, inst, Double.POSITIVE_INFINITY, m_Stats);
 				if (distance == 0.0 && m_SkipIdentical && i < max -1)
 					continue;
+				avg_distance += distance;
 				candidates.add(inst);
 				heap.put(candidates.size()-1, distance);
 				firstkNN++;
@@ -205,7 +230,7 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 			else 
 			{
 				MyHeapElement temp = heap.peek();
-				distance = m_DistanceFunction.distance(target, inst, (float) temp.distance, m_Stats);
+				distance = m_DistanceFunction.distance(target, inst, (float) 2* temp.distance, m_Stats);
 				if (distance == 0.0F && m_SkipIdentical)
 					continue;
 				if (distance < temp.distance) {
@@ -216,11 +241,21 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 					heap.putKthNearest(candidates.size() -1, distance);
 				}
 				else // the curve K-th neighbour reached
-					return firstkNN;
+				if (distance == Double.POSITIVE_INFINITY)
+					return firstkNN; 
 
 			}
 		}
 		return firstkNN;
+	}
+	private void buildZOrder() throws Exception {
+		if (m_instance_list ==null)
+		{
+			m_instance_list = new  ArrayList[m_NumSearchCurves];
+			m_random_projection.project(m_normalized_data.normalizedData());
+			for (int i = 0; i < m_NumSearchCurves; ++i)
+				m_instance_list[i] = m_order.createZOrder(m_random_projection.getProjection()[i], m_normalized_data.normalizedData());
+		}
 	}
 	@Override
 	public double[] getDistances() throws Exception {
@@ -229,12 +264,9 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 
 	@Override
 	public void update(Instance ins) throws Exception {
-		for (int i = 0; i < m_NumSearchCurves; ++i) {
-			BigInteger newInt = m_order.interleave(ins, i);
-			ZOrderInstance zo = new ZOrderInstance(newInt, ins);
-			m_instance_list[i].add(zo);
-		}
 		m_DistanceFunction.update(ins);
+		m_normalized_data.update(ins);
+		m_instance_list = null;
 	}
 
 	/**
@@ -247,12 +279,14 @@ public class ZOrderSearch extends NearestNeighbourSearch {
 	 */
 	public void setInstances(Instances insts) throws Exception {
 		super.setInstances(insts);
-		m_order = createOrder(insts);
+		m_order = new ZOrder();
 		m_DistanceFunction.setInstances(insts);
-		m_instance_list = new ArrayList[m_NumSearchCurves];
-		for (int i = 0; i < m_NumSearchCurves; ++i)
-			m_instance_list[i] = m_order.createZOrder(insts, i);
+		m_normalized_data = new NormalizedData((NormalizableDistance)m_DistanceFunction);
+		m_normalized_data.update(insts);
+		m_random_projection = new RandomProjectionFold(insts, m_NumSearchCurves, m_NumDimensions);
+		m_instance_list = null;
 	}
+	
 
 	@Override
 	public String getRevision() {

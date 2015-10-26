@@ -1,7 +1,5 @@
 package test.java;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import junit.framework.Assert;
@@ -11,10 +9,10 @@ public class ZOrderFoldTest {
 
 	@Test
 	public void testFold() {
-		ZOrderFold fold = new ZOrderFold(0,11, 3);
-		Assert.assertEquals(fold.mapping(0).size(), 3);
-		Assert.assertEquals(fold.mapping(1).size(), 3);
-		Assert.assertEquals(fold.mapping(2).size(), 4);
+		ZOrderFold fold = new ZOrderFold(0,11, 3,1);
+		Assert.assertEquals(fold.mapping(0,0).size(), 3);
+		Assert.assertEquals(fold.mapping(0,1).size(), 3);
+		Assert.assertEquals(fold.mapping(0,2).size(), 4);
 	}
 
 }

@@ -6,6 +6,7 @@
 package org.moa.gpu;
 
 import org.moa.gpu.bridge.DenseOffHeapBuffer;
+
 import weka.core.Instance;
 
 /**

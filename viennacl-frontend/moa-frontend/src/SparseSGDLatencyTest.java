@@ -10,7 +10,6 @@ import org.moa.gpu.SparseSGD;
 import org.moa.gpu.config.Experiments;
 import org.moa.gpu.config.SGDExperiment;
 import org.moa.gpu.util.EvaluateTrainLatency;
-import org.moa.gpu.util.EvaluateTrainSpeed;
 
 import moa.options.AbstractOptionHandler;
 import moa.options.ClassOption;

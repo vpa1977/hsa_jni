@@ -7,6 +7,7 @@ package weka.core.neighboursearch;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+
 import weka.core.Instance;
 
 /**
@@ -14,7 +15,11 @@ import weka.core.Instance;
  * @author john
  */
 public class ZOrderInstance implements Comparable<ZOrderInstance>,  Serializable {
-    public Instance m_instance;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public Instance m_instance;
     public BigInteger m_order;
 
     ZOrderInstance(BigInteger value, Instance inst) {
