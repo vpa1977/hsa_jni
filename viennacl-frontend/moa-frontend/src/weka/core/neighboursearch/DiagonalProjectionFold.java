@@ -128,4 +128,10 @@ public class DiagonalProjectionFold implements Serializable, IProjection {
 		inst.setDataset(m_data[curve]);
 		return  inst;
 	}
+
+
+	@Override
+	public Instance[] addToProjections(Instance src) throws Exception {
+		throw new RuntimeException("Not implemented");
+	}
 }

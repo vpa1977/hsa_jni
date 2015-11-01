@@ -72,6 +72,30 @@ public class RandomProjectionFold implements Serializable, IProjection {
 		return m_data;
 	}
 	
+	/** 
+	 * add new instance to the projections
+	 * @param src
+	 */
+	public Instance[] addToProjections(Instance src) throws Exception
+	{
+		Instance[] result = new Instance[m_projections.length];
+		for (int curve = 0; curve < m_projections.length ; ++curve)
+		{
+			Instance out;
+			m_projections[curve].input(src);
+			m_projections[curve].batchFinished();
+			if (m_data[curve] == null)
+				m_data[curve] = m_projections[curve].getOutputFormat();
+			Instance output = m_projections[curve].output();
+			m_data[curve].add(output);
+			result[curve] = output;
+			if (m_distances[curve].getInstances() == null)
+				m_distances[curve].setInstances(m_data[curve]);
+			m_distances[curve].update(output);
+		}
+		return result;
+	}
+	
 	/* (non-Javadoc)
 	 * @see weka.core.neighboursearch.IProjection#getProjection()
 	 */

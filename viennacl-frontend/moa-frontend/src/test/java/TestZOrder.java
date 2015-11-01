@@ -58,7 +58,7 @@ public class TestZOrder {
         ArrayList<ZOrderInstance> result = order.createZOrder(dataset, dataset);
         for (ZOrderInstance inst : result)
         {
-            System.out.println(inst.m_instance);
+            System.out.println(inst.m_instance_index);
         }
         System.out.println("*");
     }

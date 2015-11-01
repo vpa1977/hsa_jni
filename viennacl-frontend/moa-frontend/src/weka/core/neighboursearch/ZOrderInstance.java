@@ -18,13 +18,13 @@ public class ZOrderInstance implements Comparable<ZOrderInstance>,  Serializable
     /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
-	public Instance m_instance;
-    public BigInteger m_order;
+    private static final long serialVersionUID = 1L;
+    public int m_instance_index;
+    public FixedInt m_order;
 
-    ZOrderInstance(BigInteger value, Instance inst) {
+    ZOrderInstance(FixedInt value, int instance_index) {
        m_order = value;
-       m_instance = inst;
+       m_instance_index = instance_index;
     }
 
     public int compareTo(ZOrderInstance o2) {

@@ -6,6 +6,8 @@ import weka.core.Instances;
 import weka.core.NormalizableDistance;
 
 public interface IProjection {
+	
+	Instance[] addToProjections(Instance src) throws Exception;
 
 	/** 
 	 * project compatible dataset 

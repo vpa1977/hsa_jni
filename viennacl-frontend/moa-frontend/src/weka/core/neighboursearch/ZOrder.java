@@ -60,12 +60,12 @@ public class ZOrder implements Serializable {
      * @param curve - projection + random shift if enabled -  
      * @return 
      */
-    public BigInteger interleave(Instance instance, NormalizableDistance z_order_norm) throws Exception
+    public FixedInt interleave(Instance instance, NormalizableDistance z_order_norm) throws Exception
     {
     	return interleaveAsLong(instance, z_order_norm);
     }
     
-    private BigInteger interleaveAsInt(Instance instance, NormalizableDistance z_order_norm) throws Exception {
+    private FixedInt interleaveAsInt(Instance instance, NormalizableDistance z_order_norm) throws Exception {
 		int num_attributes = instance.numAttributes() -1;
         byte[] data = new byte[num_attributes * 4]; // 32 bit per each attribute
                                                                     // x number of attributes
@@ -90,7 +90,7 @@ public class ZOrder implements Serializable {
            data[data.length -1 - byte_position] |=  (bit_value << bit_position);
            //data[byte_position] |=  (bit_value << bit_position);
         }
-        return new BigInteger(data);
+        return new FixedInt(data.length*8, data);
     	
     }
 
@@ -104,7 +104,7 @@ public class ZOrder implements Serializable {
     }
 
 
-	private BigInteger interleaveAsLong(Instance instance, NormalizableDistance z_order_norm) throws Exception {
+	private FixedInt interleaveAsLong(Instance instance, NormalizableDistance z_order_norm) throws Exception {
 		int num_attributes = instance.numAttributes() -1;
         byte[] data = new byte[num_attributes * 8]; // 64 bit per each attribute
                                                                     // x number of attributes
@@ -129,7 +129,7 @@ public class ZOrder implements Serializable {
            data[data.length -1 - byte_position] |=  (bit_value << bit_position);
            //data[byte_position] |=  (bit_value << bit_position);
         }
-        return new BigInteger(data);
+        return new FixedInt(data.length* 8,data);
 	}
     
     /*
@@ -145,8 +145,8 @@ public class ZOrder implements Serializable {
         {
             Instance inst = dataset.instance(i);
             try {
-            	BigInteger value = interleave(inst, z_order_norm);
-            	z_order.add(new ZOrderInstance(value, source.instance(i)));
+            	FixedInt value = interleave(inst, z_order_norm);
+            	z_order.add(new ZOrderInstance(value, i));
             }
             catch (Exception e) { e.printStackTrace(); }
         }
